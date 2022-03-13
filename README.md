@@ -1,6 +1,9 @@
 # SteamAutoCracker
 An open-source script that automatically Cracks (removes DRM from) Steam games
 
+**Setup tip:** you can paste text by using the right click.\
+Left clicking will automatically copy the selected text, so don't do that.
+
 ## Screenshots
 Setup:
 ![image](https://user-images.githubusercontent.com/101492671/158049430-d1d7f352-4060-4266-bd9a-5e022c365a29.png)\

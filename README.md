@@ -12,6 +12,13 @@ Cracking phase 1:
 Cracking phase 2:
 ![image](https://user-images.githubusercontent.com/101492671/158049553-5b41d992-d144-4851-b6cb-ed3eeb528b82.png)
 
+## Requirements
+- An internet connection (STA will do requests to `steampowered.com` to retrieve AppIDs and DLCs)
+- If you use the compiled .exe:
+  - 64 bits Windows
+- If you use the python file (source):
+  - No requirement. I think Python 3+ is needed.
+
 ## Notes about DLCs
 Some DLCs in some games requires you to download additional files.\
 This tool is not able to download those files, you'll have to get a clean version of them.

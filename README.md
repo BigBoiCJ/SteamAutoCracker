@@ -16,11 +16,13 @@ Cracking phase 2:
 Some DLCs in some games requires you to download additional files.\
 This tool is not able to download those files, you'll have to get a clean version of them.
 
-A place where you can get clean Steam files for games (and sometimes DLCs) in the [Steam Content Sharing section from cs.rin.ru](https://cs.rin.ru/forum/viewforum.php?f=22)
+You can get clean Steam files for games (and sometimes DLCs) in the [Steam Content Sharing section from cs.rin.ru](https://cs.rin.ru/forum/viewforum.php?f=22)
 
 ## Steam Stub
 Due to Steamless not supporting command-line arguments, and my really poor knowledge of development, I'm not able to remove the Steam Stub DRM properly.\
 However, you can try to bypass the Steam Stub with Steam Emus, because some of them support that, but the best solution is to remove it entirely.
+
+**Update:** An update will be available soon and will bundle a fork of Steamless. STA will be able to remove the Steam Stub DRM automatically. Stay tuned!
 
 ## Compilation informations
 Compiled using [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/)

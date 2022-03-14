@@ -4,7 +4,19 @@ An open-source script that automatically Cracks (removes DRM from) Steam games
 **Setup tip:** you can paste text by using the right click.\
 Left clicking will automatically copy the selected text, so don't do that.
 
+## Features
+- Automatically cracks your bought or pirated Steam games. You only need to enter the Game Name or AppID.
+  - Cracks **Steam API DRM** by applying and configurating **Steam Emulators** automatically
+  - Cracks **Steam Stub DRM** by applying **Steamless** on executables automatically
+- No Steam account or Steam API key needed
+- Configurable to your liking
+- Option to only unlock DLCs for your bought Steam games instead of cracking them entirely
+- Option to choose your own Steam Emu thanks to a simple config template system (default: ALI213)
+- Open source, transparent and privacy focused. No hidden analytics or weird things!
+
 ## Screenshots
+Screenshots from v1.0.0, they might be a bit outdated.
+
 Setup:
 ![image](https://user-images.githubusercontent.com/101492671/158049430-d1d7f352-4060-4266-bd9a-5e022c365a29.png)\
 Cracking phase 1:
@@ -25,14 +37,15 @@ This tool is not able to download those files, you'll have to get a clean versio
 
 You can get clean Steam files for games (and sometimes DLCs) in the [Steam Content Sharing section from cs.rin.ru](https://cs.rin.ru/forum/viewforum.php?f=22)
 
-## Steam Stub
-Due to Steamless not supporting command-line arguments, and my really poor knowledge of development, I'm not able to remove the Steam Stub DRM properly.\
-However, you can try to bypass the Steam Stub with Steam Emus, because some of them support that, but the best solution is to remove it entirely.
-
-**Update:** An update will be available soon and will bundle a fork of Steamless. STA will be able to remove the Steam Stub DRM automatically. Stay tuned!
-
 ## Compilation informations
 Compiled using [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/)
+
+## Privacy
+STA will do requests to `steampowered.com` (Steam's official website) to retrieve AppIDs and DLCs.\
+It is not bannable, and won't cause you problems.
+
+Nothing is logged by STA.\
+You can delete the STA folder at any time and there won't be any leftovers.
 
 ## Thanks
 - Thanks to [atom0s for their Steamless project](https://github.com/atom0s/Steamless)

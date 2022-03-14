@@ -6,8 +6,9 @@ import sys
 from sac_lib.get_file_version import GetFileVersion
 from itertools import combinations
 import shutil
+from time import sleep
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 # Functions
 
@@ -83,12 +84,12 @@ def RetrieveGame():
     global dlcIDs
     global dlcNames
 
-    print("[1/4] Retrieving game informations from Steam...")
+    print("\n[1/4] Retrieving game informations from Steam...")
     # https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI#appdetails
     req = requests.get("https://store.steampowered.com/api/appdetails?appids=" + str(appID) + "&filters=basic")
     data = req.json()
     data = data[str(appID)]
-    if data["success"] == "false":
+    if not data["success"]:
         print("- AppID " + str(appID) + " not found.")
         input("Press enter to exit")
         exit()
@@ -101,7 +102,7 @@ def RetrieveGame():
     appID = data["data"]["steam_appid"]
     print("- Game found! Name:", gameName, "- AppID:", appID)
 
-    print("[2/4] Retrieving DLCs...")
+    print("\n[2/4] Retrieving DLCs...")
 
     if "dlc" in data["data"]:
         dlcIDs = data["data"]["dlc"]
@@ -140,9 +141,9 @@ if config.read("config.ini") == []:
     loc = FixFolderFormatting(loc)
     config["Locations"]["Steam"] = loc
 
-    print("----------")
-    print("Specify the location of your NON-LEGAL/Pirated Steam Games. This will allow the tool to automatically crack the game for you. Sadly, Steamless can't be automated, so we won't be able to remove Steam Stub.")
-    print("Example: D:\\Games\\Pirated\\")
+    print("\n----------")
+    print("Specify the location of your NON-LEGAL/Pirated Steam Games. This will allow the tool to automatically crack the game for you.")
+    print("Example: D:/Games/Pirated/")
     print("Note: anti-slashes \\ will be converted to slashes /")
     print("If you do not have Pirated Games or you do not plan to auto-crack games and/or auto-unlock DLCs, don't write anything")
 
@@ -152,7 +153,7 @@ if config.read("config.ini") == []:
 
     config["Preferences"] = {}
 
-    print("----------")
+    print("\n----------")
     print("Now, please decide wether or not we should directly crack the game, or if we should only create the crack config instead:")
     print("0 - Crack the game automatically")
     print("1 - Only create the crack config, and put it in the same directory as steam_api(64).dll")
@@ -172,7 +173,7 @@ if config.read("config.ini") == []:
 
     config["Preferences"]["CrackOption"] = str(choice)
 
-    print("----------")
+    print("\n----------")
     print("Should we also crack Owned/BOUGHT Steam games (not the DLCs, but the base game)?")
     print("There shouldn't be any point to that for the regular user, but if you want to remove DRMs from your owned games or if you want to publish the cracked version of your game, you can enable that.")
     print("0 - Don't attempt to crack BOUGHT games")
@@ -192,16 +193,46 @@ if config.read("config.ini") == []:
 
     config["Preferences"]["CrackOwnedGames"] = str(choice)
 
+    print("\n----------")
+    print("Should we attempt to use Steamless on the game's .exe file?")
+    print("This will allow us to bypass the SteamStub DRM if it is used.")
+    print("0 - Don't attempt to use Steamless")
+    print("1 - Attempt to use Steamless (recommended)")
+    while True:
+        choice = input("Choice: ")
+        try:
+            choice = int(choice)
+        except:
+            print("You did not enter a correct value")
+            continue
+
+        if not 0 <= choice <= 1:
+            print("You did not enter a correct value")
+            continue
+        break
+
+    config["Preferences"]["Steamless"] = str(choice)
+
     config["FileNames"] = {}
 
-    print("----------")
+    if config["Preferences"]["Steamless"] == "1":
+        print("\n----------")
+        print("Should we keep the default game's .exe file if cracked by Steamless?")
+        print("empty = don't keep it, delete it")
+        print("anything else = suffix for the default game's executable")
+        choice = input("Suffix for the default game's exe: ")
+        config["FileNames"]["GameEXE"] = str(choice)
+    else:
+        config["FileNames"]["GameEXE"] = ""
+
+    print("\n----------")
     print("Should we keep the default steam_api.dll file?")
     print("empty = don't keep it, delete it")
     print("anything else = new file name (including the extension)")
     choice = input("New file name for steam_api.dll: ")
     config["FileNames"]["SteamAPI"] = str(choice)
 
-    print("----------")
+    print("\n----------")
     print("Should we keep the default steam_api64.dll file?")
     print("empty = don't keep it, delete it")
     print("anything else = new file name (including the extension)")
@@ -211,13 +242,16 @@ if config.read("config.ini") == []:
     with open("config.ini", "w", encoding="utf-8") as configFile:
         config.write(configFile)
 
-    print("----------")
+    print("\n-----=====-----")
     print("Setup finished!")
     print("-----=====-----")
 
 # Script
 
-gameName = input("Enter the Name or AppID of the game you want to Crack: ")
+if len(sys.argv) > 1:
+    gameName = sys.argv[1:]
+else:
+    gameName = input("Enter the Name or AppID of the game you want to Crack: ")
 appID = 0
 dlcIDs = []
 dlcNames = []
@@ -229,7 +263,7 @@ except:
 
 RetrieveGame()
 
-print("[3/4] Searching the game folder...")
+print("\n[3/4] Searching the game folder...")
 
 gameDir = "error"
 gameNameBuffer = gameName
@@ -256,11 +290,17 @@ print("- Found the game folder on your computer:", config["Locations"][platform]
 
 # Found the folder name: gameDir
 # Loop through all folders and files to find steam_api.dll and steam_api64.dll
-print("[4/4] Searching Steam API DLLs and cracking them...")
+print("\n[4/4] Searching Steam API DLLs and cracking them...")
 
 cracked = False
 
 if platform == "Steam" and config["Preferences"]["CrackOwnedGames"] == "0":
+    # Only crack DLCs
+    if len(dlcIDs) == 0:
+        # No DLC is available
+        print("-----\nNo DLC is available, and you asked to NOT crack owned games. Aborting the cracking process.")
+        input("Press enter to exit")
+        exit()
     configDir = "sac_emu/dlc/"
 else:
     configDir = "sac_emu/game/"
@@ -268,6 +308,35 @@ config.read(configDir + "config_override.ini")
 
 for root, dirs, files in os.walk(config["Locations"][platform] + gameDir):
     apiFile = ""
+
+    if config["Preferences"]["Steamless"] == "1" and (platform != "Steam" or config["Preferences"]["CrackOwnedGames"] == "1"):
+        # Run Steamless on every .exe file. If it's not under DRM or not the wrong file, no problem!
+        for fileName in files:
+            if not fileName.endswith(".exe"):
+                continue
+            print("- Attempting to run Steamless on", fileName)
+            print("\n[[[ Steamless logs ]]]")
+            fileLocation = root + "/" + fileName
+            os.rename(fileLocation, fileName) # Move the file to our location
+            os.system("Steamless_CLI\\Steamless.CLI.exe \"" + fileName + "\"") # Run Steamless on the game
+            print("[[[ -------------- ]]]\n")
+
+            # Check if the game was NOT unpacked
+            if not os.path.isfile(fileName + ".unpacked.exe"):
+                # Move back the original game's exe since it didn't change
+                print("- Couldn't run Steamless on " + fileName + ", it is probably not under DRM.")
+                os.rename(fileName, fileLocation)
+                continue
+
+            print("- Removed Steam Stub DRM from", fileName)
+            if config["FileNames"]["GameEXE"] != "":
+                # Rename and move back the original game's exe
+                os.rename(fileName, fileLocation + config["FileNames"]["GameEXE"])
+            else:
+                # Delete the original game's exe
+                os.remove(fileName)
+            # Rename and move the unpacked exe to the game's directory
+            os.rename(fileName + ".unpacked.exe", fileLocation)
 
     if "steam_api.dll" in files:
         apiFile = root + "/steam_api.dll"
@@ -315,10 +384,8 @@ for root, dirs, files in os.walk(config["Locations"][platform] + gameDir):
         print("- Found Steam API DLL(s) in", root, "and cracked them successfully")
         cracked = True
 
-print("-----\nFinished cracking the game!")
+print("\n-----\nFinished cracking the game!")
 if not cracked:
     print("[!] No Steam API DLL was found in the game!")
-else:
-    print("Remember to use Steamless on the game if needed!")
 
 input("Press enter to exit")

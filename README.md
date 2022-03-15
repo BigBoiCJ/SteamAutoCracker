@@ -37,7 +37,7 @@ This tool is not able to download those files, you'll have to get a clean versio
 
 You can get clean Steam files for games (and sometimes DLCs) in the [Steam Content Sharing section from cs.rin.ru](https://cs.rin.ru/forum/viewforum.php?f=22)
 
-## Compilation informations
+## Windows Build informations
 Compiled using [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/)
 
 ## Privacy

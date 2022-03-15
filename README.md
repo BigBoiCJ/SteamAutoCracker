@@ -6,7 +6,7 @@ Left clicking will automatically copy the selected text, so don't do that.
 
 ## Features
 - Automatically cracks your bought or pirated Steam games. You only need to enter the Game Name or AppID.
-  - Cracks **Steam API DRM** by applying and configurating **Steam Emulators** automatically
+  - Cracks **Steam API DRM** by applying and configuring **Steam Emulators** automatically
   - Cracks **Steam Stub DRM** by applying **Steamless** on executables automatically
 - No Steam account or Steam API key needed
 - Configurable to your liking

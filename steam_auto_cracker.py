@@ -8,7 +8,7 @@ from itertools import combinations
 import shutil
 from time import sleep
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 # Functions
 
@@ -72,6 +72,12 @@ def FindGameDirectory(gameName: str, configName: str, attemptCombos=True) -> str
 
 def RetrieveAppName(appID: int) -> str:
     req = requests.get("https://store.steampowered.com/api/appdetails?appids=" + str(appID) + "&filters=basic")
+    if not req.ok:
+        # try a second time
+        print("- RetrieveAppName request failed, retrying...")
+        sleep(1)
+        req = requests.get("https://store.steampowered.com/api/appdetails?appids=" + str(appID) + "&filters=basic")
+
     data = req.json()
     data = data[str(appID)]
     if (not "data" in data) or (not "name" in data["data"]):
@@ -90,11 +96,11 @@ def RetrieveGame():
     data = req.json()
     data = data[str(appID)]
     if not data["success"]:
-        print("- AppID " + str(appID) + " not found.")
+        print("[!] AppID " + str(appID) + " not found.")
         input("Press enter to exit")
         exit()
     if data["data"]["type"] != "game":
-        print("- AppID " + str(appID) + " is not a game.")
+        print("[!] AppID " + str(appID) + " is not a game.")
         input("Press enter to exit")
         exit()
 
@@ -104,21 +110,74 @@ def RetrieveGame():
 
     print("\n[2/4] Retrieving DLCs...")
 
-    if "dlc" in data["data"]:
-        dlcIDs = data["data"]["dlc"]
-        dlcIDsLen = len(dlcIDs)
+    # Optional config check
+    option = "0"
+    try:
+        option = config["Developer"]["RetrieveDLCOption"]
+    except:
+        pass
 
-        # Get DLCs names
-        for i in range(dlcIDsLen):
-            appName = RetrieveAppName(dlcIDs[i])
-            if appName == "error":
-                print("- Error! No App Name found for AppID", dlcIDs[i])
-                input("Press enter to exit")
-                exit()
-            dlcNames.append(appName)
-            print("- Found DLC " + str(i+1) + "/" + str(dlcIDsLen) + ": " + appName + " (" + str(dlcIDs[i]) + ")")
+    if option == "1":
+        # Old retrieve option
+        print("Using the old retrieve option (RetrieveDLCOption is set to 1)")
+
+        if "dlc" in data["data"]:
+            dlcIDs = data["data"]["dlc"]
+            dlcIDsLen = len(dlcIDs)
+
+            # Get DLCs names
+            for i in range(dlcIDsLen):
+                appName = RetrieveAppName(dlcIDs[i])
+                if appName == "error":
+                    print("[!] Error! No App Name found for AppID", dlcIDs[i])
+                    input("Press enter to exit")
+                    exit()
+                dlcNames.append(appName)
+                print("- Found DLC " + str(i+1) + "/" + str(dlcIDsLen) + ": " + appName + " (" + str(dlcIDs[i]) + ")")
+        else:
+            print("- No DLC found for this game!")
     else:
-        print("- No DLC found for this game!")
+        # Default retrieve option
+
+        req2 = requests.get("https://store.steampowered.com/dlc/" + str(appID) +"/random/ajaxgetfilteredrecommendations/?query&count=10000")
+        data2 = req2.json()
+        if not data2["success"]:
+            print("[!] Retrieve DLC request failed!")
+            input("Press enter to exit")
+            exit()
+
+        if data2["total_count"] == 0:
+            print("- No DLC found for this game!")
+        else:
+            resultsIndex = 0
+
+            # format: data-ds-appid="1812883"
+            i = -1
+            while i + 1 < data2["total_count"]:
+                i += 1
+
+                resultsStr = ""
+                resultsIndex = data2["results_html"].find("data-ds-appid=\"", resultsIndex)
+                resultsIndex += len("data-ds-appid=\"")
+
+                while data2["results_html"][resultsIndex] != "\"":
+                    resultsStr += data2["results_html"][resultsIndex]
+                    resultsIndex += 1
+
+                dlcID = int(resultsStr)
+                if dlcID in dlcIDs: # data-ds-appid is present 2 times for each AppID currently. This will allow us to not include it if it is already.
+                    i -= 1
+                    continue
+                dlcIDs.append(int(resultsStr))
+
+                # Retrieve DLC name
+                appName = RetrieveAppName(dlcIDs[i])
+                if appName == "error":
+                    print("[!] Error! No App Name found for AppID", dlcIDs[i])
+                    input("Press enter to exit")
+                    exit()
+                dlcNames.append(appName)
+                print("- Found DLC " + str(i+1) + "/" + str(data2["total_count"]) + ": " + appName + " (" + str(dlcIDs[i]) + ")")
 
 # Other
 
@@ -132,7 +191,7 @@ if config.read("config.ini") == []:
     # Config doesn't exist, create it
     config["Locations"] = {}
 
-    print("Since this is the first time you start the Steam Auto Crack tool (or you removed the config file), you'll need to specify the location of your Steam games")
+    print("Since this is the first time you start the Steam Auto Cracker tool (or you removed the config file), you'll need to specify the location of your Steam games")
     print("Example: D:/Games/Steam/SteamApps/common/")
     print("Note: anti-slashes \\ will be converted to slashes /")
     print("If you do not have Steam or you do not plan to auto-unlock DLCs for your BOUGHT Steam games, don't write anything")
@@ -157,7 +216,7 @@ if config.read("config.ini") == []:
     print("Now, please decide wether or not we should directly crack the game, or if we should only create the crack config instead:")
     print("0 - Crack the game automatically")
     print("1 - Only create the crack config, and put it in the same directory as steam_api(64).dll")
-    print("2 - Only create the crack config, and put it in the same directory as the Steam Auto Crack tool")
+    print("2 - Only create the crack config, and put it in the same directory as the Steam Auto Cracker tool")
     while True:
         choice = input("Choice: ")
         try:

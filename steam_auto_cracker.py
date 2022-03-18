@@ -8,7 +8,7 @@ from itertools import combinations
 import shutil
 from time import sleep
 
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 
 # Functions
 
@@ -308,7 +308,7 @@ if config.read("config.ini") == []:
 # Script
 
 if len(sys.argv) > 1:
-    gameName = sys.argv[1:]
+    gameName = sys.argv[1]
 else:
     gameName = input("Enter the Name or AppID of the game you want to Crack: ")
 appID = 0

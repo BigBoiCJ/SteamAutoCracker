@@ -52,6 +52,12 @@ It is not bannable, and won't cause you problems.
 Nothing is logged by STA.\
 You can delete the STA folder at any time and there won't be any leftovers.
 
+## Virus detection
+You could get a virus detection on some files. The biggest offender is `sac_emu\game\steam_api.dll`.\
+A lot of cracking tools are detected as malware, either because their behavior is suspect (bypass game protections), or because they have been flagged manually (happens with a lot of tools).\
+If you're suspicious, just delete the DLLs and use your owns instead.\
+You can discuss with others about the tool in [cs.rin.ru](https://cs.rin.ru/forum/viewtopic.php?f=10&t=120610) or in the GitHub issues.
+
 ## Thanks
 - Thanks to [atom0s for their Steamless project](https://github.com/atom0s/Steamless)
 - Thanks to [oureveryday for their Steamless fork, supporting command-line](https://github.com/oureveryday/Steamless_CLI)

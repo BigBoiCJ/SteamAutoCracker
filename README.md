@@ -30,7 +30,7 @@ Cracking phase 2:
 ![image](https://user-images.githubusercontent.com/101492671/158049553-5b41d992-d144-4851-b6cb-ed3eeb528b82.png)
 
 ## Requirements
-- An internet connection (STA will do requests to `steampowered.com` to retrieve AppIDs and DLCs)
+- An internet connection (SAC will do requests to `steampowered.com` to retrieve AppIDs and DLCs)
 - If you use the compiled .exe:
   - 64 bits Windows
 - If you use the python file (source):
@@ -46,11 +46,11 @@ You can get clean Steam files for games (and sometimes DLCs) in the [Steam Conte
 Compiled using [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/)
 
 ## Privacy
-STA will do requests to `steampowered.com` (Steam's official website) to retrieve AppIDs and DLCs.\
+SAC will do requests to `steampowered.com` (Steam's official website) to retrieve AppIDs and DLCs.\
 It is not bannable, and won't cause you problems.
 
-Nothing is logged by STA.\
-You can delete the STA folder at any time and there won't be any leftovers.
+Nothing is logged by SAC.\
+You can delete the SAC folder at any time and there won't be any leftovers.
 
 ## Virus detection
 You could get a virus detection on some files. The biggest offender is `sac_emu\game\steam_api.dll`.\

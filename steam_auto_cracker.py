@@ -9,7 +9,7 @@ import shutil
 from time import sleep
 import traceback
 
-VERSION = "1.2.2"
+VERSION = "1.2.3"
 
 try: # Handles Python errors to write them to a log file so they can be reported and fixes more easily.
     # Functions
@@ -381,6 +381,13 @@ try: # Handles Python errors to write them to a log file so they can be reported
         configDir = "sac_emu/game/"
     config.read(configDir + "config_override.ini")
 
+    # Optional config check
+    steamlessOptions = ""
+    try:
+        steamlessOptions = config["Developer"]["SteamlessOptions"] + " "
+    except:
+        pass
+
     for root, dirs, files in os.walk(config["Locations"][platform] + gameDir):
         apiFile = ""
 
@@ -393,7 +400,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 print("\n[[[ Steamless logs ]]]")
                 fileLocation = root + "/" + fileName
                 os.rename(fileLocation, fileName) # Move the file to our location
-                os.system("Steamless_CLI\\Steamless.CLI.exe \"" + fileName + "\"") # Run Steamless on the game
+                os.system("Steamless_CLI\\Steamless.CLI.exe " + steamlessOptions + "\"" + fileName + "\"") # Run Steamless on the game
                 print("[[[ -------------- ]]]\n")
 
                 # Check if the game was NOT unpacked

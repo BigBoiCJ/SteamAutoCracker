@@ -1,2 +1,0 @@
-Steamless: https://github.com/atom0s/Steamless
-Steamless CLI (fork): https://github.com/oureveryday/Steamless_CLI/releases/tag/v3.0.0.12_CLI

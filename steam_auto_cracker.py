@@ -9,9 +9,34 @@ import shutil
 from time import sleep
 import traceback
 
-VERSION = "1.2.3"
+VERSION = "1.2.4"
+
+RETRY_DELAY = 3 # Delay in seconds before retrying a failed request
+RETRY_MAX = 6 # Number of failed tries (includes the first try) after which SAC will stop trying and quit.
 
 try: # Handles Python errors to write them to a log file so they can be reported and fixes more easily.
+    class SACRequest:
+        def __init__(self, url:str, name:str = "Unnamed"):
+            self.url = url
+            self.tries = 0
+            self.DoRequest()
+
+        def DoRequest(self):
+            self.tries += 1
+            req = requests.get(self.url, timeout=10)
+            if not req.ok:
+                if self.tries < RETRY_MAX:
+                    # Do another try
+                    print("- " + self.name + " request failed, retrying in " + str(RETRY_DELAY) + "s... (" + str(self.tries) + "/" + str(RETRY_MAX) + " tries)")
+                    sleep(RETRY_DELAY)
+                    self.DoRequest()
+                else:
+                    print("[!] Connection failed after " + str(RETRY_MAX) + " tries. Are you connected to the Internet? Is Steam online?")
+                    input("Press enter to exit")
+                    sys.exit()
+            else:
+                self.req = req
+
     # Functions
 
     def FixFolderFormatting(loc: str):
@@ -24,7 +49,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
     def UpdateAppList():
         print("- Updating the App List, this could take a few seconds to up to a minute, depending on your internet connection.")
-        req = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2/")
+        req = SACRequest("https://api.steampowered.com/ISteamApps/GetAppList/v2/", "UpdateAppList").req
 
         with open("applist.txt", "w", encoding="utf-8") as file:
             file.write(req.text)
@@ -52,7 +77,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
             UpdateAppList()
             return FindInAppList(appName) # Re launch this funtion
         else:
-            exit()
+            sys.exit()
 
     def FindGameDirectory(gameName: str, configName: str, attemptCombos=True) -> str:
         # Banned characters (can't be used in folder names in Windows)
@@ -87,12 +112,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         return "error"
 
     def RetrieveAppName(appID: int) -> str:
-        req = requests.get("https://store.steampowered.com/api/appdetails?appids=" + str(appID) + "&filters=basic")
-        if not req.ok:
-            # try a second time
-            print("- RetrieveAppName request failed, retrying...")
-            sleep(1)
-            req = requests.get("https://store.steampowered.com/api/appdetails?appids=" + str(appID) + "&filters=basic")
+        req = SACRequest("https://store.steampowered.com/api/appdetails?appids=" + str(appID) + "&filters=basic", "RetrieveAppName").req
 
         data = req.json()
         data = data[str(appID)]
@@ -108,17 +128,17 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
         print("\n[1/4] Retrieving game informations from Steam...")
         # https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI#appdetails
-        req = requests.get("https://store.steampowered.com/api/appdetails?appids=" + str(appID) + "&filters=basic")
+        req = SACRequest("https://store.steampowered.com/api/appdetails?appids=" + str(appID) + "&filters=basic", "RetrieveGame").req
         data = req.json()
         data = data[str(appID)]
         if not data["success"]:
             print("[!] AppID " + str(appID) + " not found.")
             input("Press enter to exit")
-            exit()
+            sys.exit()
         if data["data"]["type"] != "game":
             print("[!] AppID " + str(appID) + " is not a game.")
             input("Press enter to exit")
-            exit()
+            sys.exit()
 
         gameName = data["data"]["name"]
         appID = data["data"]["steam_appid"]
@@ -147,7 +167,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
                     if appName == "error":
                         print("[!] Error! No App Name found for AppID", dlcIDs[i])
                         input("Press enter to exit")
-                        exit()
+                        sys.exit()
                     dlcNames.append(appName)
                     print("- Found DLC " + str(i+1) + "/" + str(dlcIDsLen) + ": " + appName + " (" + str(dlcIDs[i]) + ")")
             else:
@@ -155,12 +175,12 @@ try: # Handles Python errors to write them to a log file so they can be reported
         else:
             # Default retrieve option
 
-            req2 = requests.get("https://store.steampowered.com/dlc/" + str(appID) +"/random/ajaxgetfilteredrecommendations/?query&count=10000")
+            req2 = SACRequest("https://store.steampowered.com/dlc/" + str(appID) +"/random/ajaxgetfilteredrecommendations/?query&count=10000", "RetrieveDLC").req
             data2 = req2.json()
             if not data2["success"]:
                 print("[!] Retrieve DLC request failed!")
                 input("Press enter to exit")
-                exit()
+                sys.exit()
 
             if data2["total_count"] == 0:
                 print("- No DLC found for this game!")
@@ -191,7 +211,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
                     if appName == "error":
                         print("[!] Error! No App Name found for AppID", dlcIDs[i])
                         input("Press enter to exit")
-                        exit()
+                        sys.exit()
                     dlcNames.append(appName)
                     print("- Found DLC " + str(i+1) + "/" + str(data2["total_count"]) + ": " + appName + " (" + str(dlcIDs[i]) + ")")
 
@@ -375,7 +395,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
             # No DLC is available
             print("-----\nNo DLC is available, and you asked to NOT crack owned games. Aborting the cracking process.")
             input("Press enter to exit")
-            exit()
+            sys.exit()
         configDir = "sac_emu/dlc/"
     else:
         configDir = "sac_emu/game/"

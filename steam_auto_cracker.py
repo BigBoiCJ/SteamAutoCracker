@@ -419,7 +419,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 print("- Attempting to run Steamless on", fileName)
                 print("\n[[[ Steamless logs ]]]")
                 fileLocation = root + "/" + fileName
-                os.rename(fileLocation, fileName) # Move the file to our location
+                shutil.move(fileLocation, fileName) # Move the file to our location
                 os.system("Steamless_CLI\\Steamless.CLI.exe " + steamlessOptions + "\"" + fileName + "\"") # Run Steamless on the game
                 print("[[[ -------------- ]]]\n")
 
@@ -427,18 +427,18 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 if not os.path.isfile(fileName + ".unpacked.exe"):
                     # Move back the original game's exe since it didn't change
                     print("- Couldn't run Steamless on " + fileName + ", it is probably not under DRM.")
-                    os.rename(fileName, fileLocation)
+                    shutil.move(fileName, fileLocation)
                     continue
 
                 print("- Removed Steam Stub DRM from", fileName)
                 if config["FileNames"]["GameEXE"] != "":
                     # Rename and move back the original game's exe
-                    os.rename(fileName, fileLocation + config["FileNames"]["GameEXE"])
+                    shutil.move(fileName, fileLocation + config["FileNames"]["GameEXE"])
                 else:
                     # Delete the original game's exe
                     os.remove(fileName)
                 # Rename and move the unpacked exe to the game's directory
-                os.rename(fileName + ".unpacked.exe", fileLocation)
+                shutil.move(fileName + ".unpacked.exe", fileLocation)
 
         if "steam_api.dll" in files:
             apiFile = root + "/steam_api.dll"
@@ -448,7 +448,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 if config["FileNames"]["SteamAPI"] == "":
                     os.remove(apiFile)
                 else:
-                    os.rename(apiFile, root + "/" + config["FileNames"]["SteamAPI"])
+                    shutil.move(apiFile, root + "/" + config["FileNames"]["SteamAPI"])
                 shutil.copyfile(configDir + "steam_api.dll", apiFile)
 
         if "steam_api64.dll" in files:
@@ -459,7 +459,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 if config["FileNames"]["SteamAPI64"] == "":
                     os.remove(apiFile)
                 else:
-                    os.rename(apiFile, root + "/" + config["FileNames"]["SteamAPI64"])
+                    shutil.move(apiFile, root + "/" + config["FileNames"]["SteamAPI64"])
                 shutil.copyfile(configDir + "steam_api64.dll", apiFile)
 
         if apiFile != "":

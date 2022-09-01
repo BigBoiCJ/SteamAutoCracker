@@ -9,7 +9,7 @@ import shutil
 from time import sleep
 import traceback
 
-VERSION = "1.2.5"
+VERSION = "1.2.6"
 
 RETRY_DELAY = 3 # Delay in seconds before retrying a failed request
 RETRY_MAX = 6 # Number of failed tries (includes the first try) after which SAC will stop trying and quit.
@@ -19,6 +19,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         def __init__(self, url:str, name:str = "Unnamed"):
             self.url = url
             self.tries = 0
+            self.name = name
             self.DoRequest()
 
         def DoRequest(self):

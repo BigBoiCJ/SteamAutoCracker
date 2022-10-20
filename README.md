@@ -50,7 +50,10 @@ SAC will do requests to `steampowered.com` (Steam's official website) to retriev
 It is not bannable, and won't cause you problems.
 
 Nothing is logged by SAC.\
-You can delete the SAC folder at any time and there won't be any leftovers.
+You can delete the SAC folder at any time and there won't be any leftovers. *
+
+__* Exception to leftovers:__
+- There will be some leftovers if you use the compiled exe. This is due to how PyInstaller / auto-py-to-exe works. An embedded version of Python and the python script itself will be extracted to the temp-folder of your OS. The folder will be named `_MEIxxxxxx`, where xxxxxx is a random number. You can delete the folder at any time after using the program, as it might not correctly delete itself in all cases. Please check the [pyinstaller documentation](https://pyinstaller.org/en/stable/operating-mode.html#how-the-one-file-program-works) for more infos.
 
 ## Virus detection
 You could get a virus detection on some files. The biggest offender is `sac_emu\game\steam_api.dll`.\

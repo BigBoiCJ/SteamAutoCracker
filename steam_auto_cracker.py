@@ -9,12 +9,14 @@ import shutil
 from time import sleep
 import traceback
 
-VERSION = "1.2.7"
+VERSION = "1.2.8"
 
-RETRY_DELAY = 3 # Delay in seconds before retrying a failed request
-RETRY_MAX = 6 # Number of failed tries (includes the first try) after which SAC will stop trying and quit.
+RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
+RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
 
-try: # Handles Python errors to write them to a log file so they can be reported and fixes more easily.
+HIGH_DLC_WARNING = 125
+
+try: # Handles Python errors to write them to a log file so they can be reported and fixed more easily.
     class SACRequest:
         def __init__(self, url:str, name:str = "Unnamed"):
             self.url = url
@@ -32,7 +34,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
                     sleep(RETRY_DELAY)
                     self.DoRequest()
                 else:
-                    print("[!] Connection failed after " + str(RETRY_MAX) + " tries. Are you connected to the Internet? Is Steam online?")
+                    print("[!] Connection failed after " + str(RETRY_MAX) + " tries. Are you connected to the Internet? Is Steam online?\nIf you being rate limited (too many DLCs), you should try increasing retry_delay and retry_max in config.ini")
                     input("Press enter to exit")
                     sys.exit()
             else:
@@ -162,6 +164,9 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 dlcIDs = data["data"]["dlc"]
                 dlcIDsLen = len(dlcIDs)
 
+                if dlcIDsLen >= HIGH_DLC_WARNING:
+                    print(f"/!\\ WARNING: This game has more than {HIGH_DLC_WARNING} DLCs. Requests may fail due to Steam rate limiting. If it does, just give it time, it'll eventually manage to retrieve all DLCs.")
+
                 # Get DLCs names
                 for i in range(dlcIDsLen):
                     appName = RetrieveAppName(dlcIDs[i])
@@ -186,6 +191,9 @@ try: # Handles Python errors to write them to a log file so they can be reported
             if data2["total_count"] == 0:
                 print("- No DLC found for this game!")
             else:
+                if data2["total_count"] >= HIGH_DLC_WARNING:
+                    print(f"/!\\ WARNING: This game has more than {HIGH_DLC_WARNING} DLCs. Requests may fail due to Steam rate limiting. If it does, just give it time, it'll eventually manage to retrieve all DLCs.")
+
                 resultsIndex = 0
 
                 # format: data-ds-appid="1812883"
@@ -218,7 +226,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
     # Other
 
-    print("Steam Auto Cracker (v" + VERSION + ") by BigBoiCJ")
+    print(f"Steam Auto Cracker (v{VERSION}) by BigBoiCJ")
     print("-----")
 
     # Config
@@ -335,6 +343,11 @@ try: # Handles Python errors to write them to a log file so they can be reported
         choice = input("New file name for steam_api64.dll: ")
         config["FileNames"]["SteamAPI64"] = str(choice)
 
+        config["Advanced"] = {}
+        config["Advanced"]["RetryDelay"] = str(RETRY_DELAY)
+        config["Advanced"]["RetryMax"] = str(RETRY_MAX)
+
+
         with open("config.ini", "w", encoding="utf-8") as configFile:
             config.write(configFile)
 
@@ -343,6 +356,10 @@ try: # Handles Python errors to write them to a log file so they can be reported
         print("-----=====-----")
 
     # Script
+
+    # Load config retry variables
+    RETRY_DELAY = int(config["Advanced"]["RetryDelay"])
+    RETRY_MAX = int(config["Advanced"]["RetryMax"])
 
     if len(sys.argv) > 1:
         gameName = sys.argv[1]

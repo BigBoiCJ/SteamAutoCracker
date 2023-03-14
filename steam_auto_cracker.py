@@ -9,7 +9,7 @@ import shutil
 from time import sleep
 import traceback
 
-VERSION = "1.2.8"
+VERSION = "1.2.9"
 
 RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
 RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)

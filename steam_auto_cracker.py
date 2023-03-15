@@ -1,22 +1,25 @@
-import requests
-import configparser
-import json
-import os
-import sys
-from sac_lib.get_file_version import GetFileVersion
-from itertools import combinations
-import shutil
-from time import sleep
 import traceback
 
-VERSION = "1.2.9"
-
-RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
-RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
-
-HIGH_DLC_WARNING = 125
-
 try: # Handles Python errors to write them to a log file so they can be reported and fixed more easily.
+    import requests
+    import configparser
+    import json
+    import os
+    import sys
+    from sac_lib.get_file_version import GetFileVersion
+    from itertools import combinations
+    import shutil
+    from time import sleep
+
+
+    VERSION = "1.2.9"
+
+    RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
+    RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
+
+    HIGH_DLC_WARNING = 125
+
+
     class SACRequest:
         def __init__(self, url:str, name:str = "Unnamed"):
             self.url = url

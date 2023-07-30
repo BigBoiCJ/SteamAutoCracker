@@ -34,7 +34,10 @@ Cracking phase 2:
 - If you use the compiled .exe:
   - 64 bits Windows
 - If you use the python file (source):
-  - No requirement. I think Python 3+ is needed.
+  - The `requests` module. Install with `py -m pip install requests` or `python -m pip install requests` or `python3 -m pip install requests`
+  - The `pywin32` module (which contains win32api). Install with `py -m pip install pywin32` or `python -m pip install pywin32` or `python3 -m pip install pywin32`
+    - If you have any problem, please check https://pypi.org/project/pywin32/
+  - I think Python 3+ is needed.
 
 ## Notes about DLCs
 Some DLCs in some games requires you to download additional files.\

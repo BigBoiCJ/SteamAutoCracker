@@ -4,4 +4,4 @@ Steam Auto Cracker will use these .dlls:
 
 The goal of this is to crack the game as well as unlock every DLC for an uncracked game.
 
-The default DLLs included are: ALI213 v7.30.20.28 (source: https://cs.rin.ru/forum/viewtopic.php?p=2654211#p2654211)
+The default DLLs included are: ALI213 v8.2.21.95 (source: https://cs.rin.ru/forum/viewtopic.php?p=2857168#p2857168)

@@ -1,72 +1,35 @@
-# SteamAutoCracker
-![GitHub all releases](https://img.shields.io/github/downloads/BigBoiCJ/SteamAutoCracker/total?color=brightgreen&label=Total%20downloads)
-![GitHub release (latest by date)](https://img.shields.io/github/downloads/BigBoiCJ/SteamAutoCracker/latest/total?color=green&label=Latest%20version%20downloads)
-![GitHub Repo stars](https://img.shields.io/github/stars/BigBoiCJ/SteamAutoCracker?color=yellow&label=Stars)
-![GitHub watchers](https://img.shields.io/github/watchers/BigBoiCJ/SteamAutoCracker?label=Watchers)
+# SteamAutoCracker compile environment
 
-An open-source script that automatically Cracks (removes DRM from) Steam games
+**Change the branch to `main` to return to SteamAutoCracker!**
 
-**Setup tip:** you can paste text by using the right click.\
-Left clicking will automatically copy the selected text, so don't do that.
-
-## Features
-- Automatically cracks your bought or pirated Steam games. You only need to enter the Game Name or AppID.
-  - Cracks **Steam API DRM** by applying and configuring **Steam Emulators** automatically
-  - Cracks **Steam Stub DRM** by applying **Steamless** on executables automatically
-- No Steam account or Steam API key needed
-- Configurable to your liking
-- Option to only unlock DLCs for your bought Steam games instead of cracking them entirely
-- Option to choose your own Steam Emu thanks to a simple config template system (default: ALI213)
-- Open source, transparent and privacy focused. No hidden analytics or weird things!
-
-## Screenshots
-Screenshots from v1.0.0, they might be a bit outdated.
-
-Setup:
-![image](https://user-images.githubusercontent.com/101492671/158049430-d1d7f352-4060-4266-bd9a-5e022c365a29.png)\
-Cracking phase 1:
-![image](https://user-images.githubusercontent.com/101492671/158049508-20a821c0-22cd-46fe-b6ee-1ef4551cbfc7.png)\
-Cracking phase 2:
-![image](https://user-images.githubusercontent.com/101492671/158049553-5b41d992-d144-4851-b6cb-ed3eeb528b82.png)
+Scripts and files to help you 'compile'/bundle SteamAutoCracker into an .exe by yourself
 
 ## Requirements
-- An internet connection (SAC will do requests to `steampowered.com` to retrieve AppIDs and DLCs)
-- If you use the compiled .exe:
-  - 64 bits Windows
-- If you use the python file (source):
-  - The `requests` module. Install with `py -m pip install requests` or `python -m pip install requests` or `python3 -m pip install requests`
-  - The `pywin32` module (which contains win32api). Install with `py -m pip install pywin32` or `python -m pip install pywin32` or `python3 -m pip install pywin32`
-    - If you have any problem, please check https://pypi.org/project/pywin32/
-  - I think Python 3+ is needed.
+- An internet connection (if you haven't installed the `requests` and `pywin32` modules)
+- 64 bits Windows
+- The `requests` and `pywin32` module. Just run `create venv.bat` to create a virtual environment and install those modules on it, but I'll explain this later.
+- Python 3.7+ is needed. I'm personally running 3.9, so this version is guaranteed to work.
 
-## Notes about DLCs
-Some DLCs in some games requires you to download additional files.\
-This tool is not able to download those files, you'll have to get a clean version of them.
+## Compile instructions for Windows and pyinstaller
+Compiled using [pyinstaller](https://pypi.org/project/pyinstaller/) and [venv](https://docs.python.org/3/library/venv.html)
 
-You can get clean Steam files for games (and sometimes DLCs) in the [Steam Content Sharing section from cs.rin.ru](https://cs.rin.ru/forum/viewforum.php?f=22)
+1. Download this branch, and extract the folder in the archive somewhere on your PC
+2. Open your windows terminal (cmd) and run `pip install pyinstaller` or `py -m pip install pyinstaller` if pyinstaller isn't already installed.
+3. Open the folder and run `create venv.bat`. This is a Windows script file, it might trigger a warning, but allow the file to run anyway. (If you're afraid of it having viruses, you can easily open this file with a text editor and see what's inside)
+4. Download the `main` branch of SteamAutoCracker, and put the `steam_auto_cracker.py` file and the `sac_lib` folder inside of `sac_files_here`
+5. Run `compile sac.bat`, wait a bit, and you should now have a `steam_auto_cracker.exe` file! Enjoy :)
 
-## Windows Build informations
-Compiled using [pyinstaller](https://pypi.org/project/pyinstaller/) and venv (\
-Was previously compiled using [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/) (which is just a GUI for pyinstaller)
+(The `open venv.bat` file isn't used, but you can run it to access to the virtual environment, install modules and run commands... Modules installed inside the venv won't be installed on your real Python environment.)
 
-## Privacy
-SAC will do requests to `steampowered.com` (Steam's official website) to retrieve AppIDs and DLCs.\
-It is not bannable, and won't cause you problems.
+## Troubleshooting
+- If `py` ins't recognized as a command:
+  - Please make sure you installed Python 3.9+ from the official website (not the microsoft store). I can't guarantee the syntax on older versions of Python.
+  - Manually edit the .bat scripts and change `py` to your python command.
+- If `pyinstaller` isn't recognized as a command:
+  - Make sure you installed `pyinstaller` correctly with `py -m pip install pyinstaller`
+  - Make sure your Python installation has been correctly added to your Path environment variables. Check online on how to do it. GLHF, that might be a pain to do.
+ 
+## Why does this exist?
+For transparency, to share knowledge and to let people fork and/or continue to support SteamAutoCracker by themselves.
 
-Nothing is logged by SAC.\
-You can delete the SAC folder at any time and there won't be any leftovers. *
-
-__* Exception to leftovers:__
-- There will be some leftovers if you use the compiled exe. This is due to how PyInstaller / auto-py-to-exe works. An embedded version of Python and the python script itself will be extracted to the temp-folder of your OS. The folder will be named `_MEIxxxxxx`, where xxxxxx is a random number. You can delete the folder at any time after using the program, as it might not correctly delete itself in all cases. Please check the [pyinstaller documentation](https://pyinstaller.org/en/stable/operating-mode.html#how-the-one-file-program-works) for more infos.
-
-## Virus detection
-You could get a virus detection on some files. The biggest offender is `sac_emu\game\steam_api.dll`.\
-A lot of cracking tools are detected as malware, either because their behavior is suspect (bypass game protections), or because they have been flagged manually (happens with a lot of tools).\
-If you're suspicious about the legitimacy of the files, just delete the DLLs and use your owns instead.\
-You can discuss with others about the tool in [cs.rin.ru](https://cs.rin.ru/forum/viewtopic.php?f=10&t=120610) or in the GitHub issues.
-
-## Thanks
-- Thanks to [atom0s for their Steamless project](https://github.com/atom0s/Steamless)
-- Thanks to [oureveryday for their Steamless fork, supporting command-line](https://github.com/oureveryday/Steamless_CLI)
-- Thanks to the creators of Steam Emus, speficially those who are included: ALI213 and deadmau5 (creator of CreamAPI)
-- Thanks to CS.RIN.RU and their members for being helpful and sharing quality uploads
+Feel free to re-use those scripts for your own projects.

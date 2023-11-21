@@ -49,6 +49,8 @@ You can get clean Steam files for games (and sometimes DLCs) in the [Steam Conte
 Compiled using [pyinstaller](https://pypi.org/project/pyinstaller/) and venv (\
 Was previously compiled using [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/) (which is just a GUI for pyinstaller)
 
+Instructions on how to compile SAC, as well as useful scripts are available here: https://github.com/BigBoiCJ/SteamAutoCracker/tree/compile-env
+
 ## Privacy
 SAC will do requests to `steampowered.com` (Steam's official website) to retrieve AppIDs and DLCs.\
 It is not bannable, and won't cause you problems.

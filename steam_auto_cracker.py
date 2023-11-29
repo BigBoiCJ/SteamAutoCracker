@@ -261,7 +261,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         config["Preferences"] = {}
 
         print("\n----------")
-        print("Now, please decide wether or not we should directly crack the game, or if we should only create the crack config instead:")
+        print("Now, please decide whether or not we should directly crack the game, or if we should only create the crack config instead:")
         print("0 - Crack the game automatically")
         print("1 - Only create the crack config, and put it in the same directory as steam_api(64).dll")
         print("2 - Only create the crack config, and put it in the same directory as the Steam Auto Cracker tool")

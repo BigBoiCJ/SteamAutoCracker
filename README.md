@@ -9,6 +9,23 @@ An open-source script that automatically Cracks (removes DRM from) Steam games
 **Setup tip:** you can paste text by using the right click.\
 Left clicking will automatically copy the selected text, so don't do that.
 
+## How to use (easy way)
+- Download the bundled/compiled version by clicking [here](https://github.com/BigBoiCJ/SteamAutoCracker/releases/tag/1.2.10) and downloading the file named `Steam.Auto.Cracker.vX.X.X.zip`
+- Extract the content of the archive (.zip) somewhere on your computer
+- Run `steam_auto_cracker.exe`
+- Enter the location of your Steam games (bought ones). If you don't want to crack or DLC unlock your bought games, don't write anything and press ENTER.
+  - You can get the location of a folder by navigating to it, and then right-clicking on the navigation bar and selecting "Copy address as text". You can paste in SAC by right-clicking.
+- Enter the location of your Pirated games. Every folder inside this location will be crackable by SAC. All the games you want to crack must be located directly in this folder.
+- Now configure SAC as you wish. Here are the recommended choices:
+  - `0 - Crack the game automatically`
+  - `0 - Don't attempt to crack BOUGHT games` (you can crack them later anyway by putting them in your Pirated games location)
+  - `1 - Attempt to use Steamless (recommended)`
+  - Press enter without writing anything (don't keep the default .exe)
+  - Press enter without writing anything (don't keep the default steam_api.dll)
+  - Press enter without writing anything (don't keep the default steam_api64.dll)
+- You're done! Now you can just enter the name of a game to try to crack it! (you can also enter the Steam AppID if you know it)
+  - SAC will automatically attempt to find the matching folder in your Steam games location or your Pirated games location. If it doesn't find it, it'll ask you to manually enter it.
+
 ## Features
 - Automatically cracks your bought or pirated Steam games. You only need to enter the Game Name or AppID.
   - Cracks **Steam API DRM** by applying and configuring **Steam Emulators** automatically

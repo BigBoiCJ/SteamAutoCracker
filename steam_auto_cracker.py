@@ -12,7 +12,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     from time import sleep
 
 
-    VERSION = "1.2.11"
+    VERSION = "1.2.12"
 
     RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
     RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
@@ -265,7 +265,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         config["Preferences"] = {}
 
         print("\n----------")
-        print("Now, please decide wether or not we should directly crack the game, or if we should only create the crack config instead:")
+        print("Now, please decide whether or not we should directly crack the game, or if we should only create the crack config instead:")
         print("0 - Crack the game automatically")
         print("1 - Only create the crack config, and put it in the same directory as steam_api(64).dll")
         print("2 - Only create the crack config, and put it in the same directory as the Steam Auto Cracker tool")

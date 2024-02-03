@@ -86,6 +86,10 @@ try: # Handles Python errors to write them to a log file so they can be reported
             sys.exit()
 
     def FindGameDirectory(gameName: str, configName: str, attemptCombos=True) -> str:
+        # Check if the gameName is an absolute path
+        if os.path.isabs(gameName) and os.path.isdir(gameName):
+            return gameName
+    
         # Banned characters (can't be used in folder names in Windows)
         banned_characters = ("\\", "/", ":", "*", "?", "\"", "<", ">", "|")
         for char in banned_characters:
@@ -114,7 +118,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
         for folder in os.listdir(config["Locations"][configName]):
             if folder.lower() in gameNameList:
-                return folder
+                return config["Locations"][configName] + folder
         return "error"
 
     def RetrieveAppName(appID: int) -> str:
@@ -261,7 +265,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         config["Preferences"] = {}
 
         print("\n----------")
-        print("Now, please decide whether or not we should directly crack the game, or if we should only create the crack config instead:")
+        print("Now, please decide wether or not we should directly crack the game, or if we should only create the crack config instead:")
         print("0 - Crack the game automatically")
         print("1 - Only create the crack config, and put it in the same directory as steam_api(64).dll")
         print("2 - Only create the crack config, and put it in the same directory as the Steam Auto Cracker tool")
@@ -387,7 +391,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     while True:
         if gameDir == "error" and config["Locations"]["Pirated"] != "":
             platform = "Pirated"
-            gameDir = FindGameDirectory(gameNameBuffer, platform)
+            gameDir = FindGameDirectory(gameNameBuffer, platform) # If an absolute path is entered, the platform will also be considered as "Pirated"
         if gameDir == "error" and config["Locations"]["Steam"] != "":
             platform = "Steam"
             gameDir = FindGameDirectory(gameNameBuffer, platform)
@@ -397,12 +401,12 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 print("Couldn't automatically find the folder name of the game")
             else:
                 print("Couldn't find the folder", gameNameBuffer, "anywhere. Did you set-up your Steam and/or Pirated games location properly?")
-            print ("Please write the folder name (in SteamApps/common/ or in your pirated games folder)")
+            print ("Please write the folder name (in SteamApps/common/ or in your pirated games folder). You can also enter an absolute path (ex: C:\\Games\\Beat Saber).")
             gameNameBuffer = input("Folder name: ")
         else:
             break
 
-    print("- Found the game folder on your computer:", config["Locations"][platform] + gameDir)
+    print("- Found the game folder on your computer:", gameDir)
 
     # Found the folder name: gameDir
     # Loop through all folders and files to find steam_api.dll and steam_api64.dll
@@ -429,7 +433,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     except:
         pass
 
-    for root, dirs, files in os.walk(config["Locations"][platform] + gameDir):
+    for root, dirs, files in os.walk(gameDir):
         apiFile = ""
 
         if config["Preferences"]["Steamless"] == "1" and (platform != "Steam" or config["Preferences"]["CrackOwnedGames"] == "1"):

@@ -16,7 +16,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     import shutil
     from time import sleep
 
-    VERSION = "1.0.0"
+    VERSION = "1.1.0"
 
     RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
     RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
@@ -29,6 +29,8 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
     STATE_FindingInAppList = False
     STATE_UpdatingAppList = False
+    
+    EXTS_TO_REPLACE = (".txt", ".ini", ".cfg")
     
     def OnTkinterError(exc, val, tb):
         # Handle Tkinter Python errors
@@ -334,15 +336,16 @@ try: # Handles Python errors to write them to a log file so they can be reported
         
         if config["Crack"]["SelectedCrack"][:3] == "dlc" and len(dlcIDs) == 0: # If a dlc only crack has been selected, but the game has no DLC
             update_logs("-----\nNo DLC is available, and you selected a DLC only crack. Aborting the cracking process.")
-            # Now let's remove locks
-            selectFolderButton.config(state=tk.NORMAL)
-            searchGameButton.config(state=tk.NORMAL)
-            selectCrackButton.config(state=tk.NORMAL)
-            crackGameButton.config(state=tk.NORMAL)
+            EndCrack()
             return
         
-        configDir = "sac_emu/" + config["Crack"]["SelectedCrack"] + "/" # "sac_emu/game_ali213/" for example
-        config.read(configDir + "config_override.ini")
+        configDir = os.path.join(os.getcwd(), "sac_emu\\" + config["Crack"]["SelectedCrack"]) # "sac_emu/game_ali213" for example
+        try:
+            config.read(configDir + "\\config_override.ini")
+        except Exception:
+            pass
+        
+        configDir = os.path.join(configDir, "files") # "sac_emu/game_ali213/files" for example
         
         # Check if some custom Steamless options have been set up
         steamlessOptions = ""
@@ -353,6 +356,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         
         root.update()
         
+        dllLocations = []
         for root_dir, dirs, files in os.walk(folder_path):
             apiFile = ""
 
@@ -391,73 +395,122 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
             if "steam_api.dll" in files:
                 if config["FileNames"]["SteamAPI"] in files:
-                    update_logs("[!] Seems like a file named " + config["FileNames"]["SteamAPI"] + " is present. This could indicate that steam_api.dll has already been cracked! Aborting...")
-                    break
+                    update_logs("[!] Seems like a file named " + config["FileNames"]["SteamAPI"] + " is present. This could indicate that steam_api.dll has already been cracked! Overwriting steam_api.dll. No backup of the previous steam_api.dll could be created, and the file has been deleted. " + config["FileNames"]["SteamAPI"] + " has been restored.")
+                    os.remove(root_dir + "/steam_api.dll")
+                    shutil.move(root_dir + "/" + config["FileNames"]["SteamAPI"], root_dir + "/steam_api.dll")
                 
                 apiFile = root_dir + "/steam_api.dll"
                 try:
                     apiFileVersion = GetFileVersion(apiFile)
                 except Exception:
-                    update_logs("[!] Seems like the steam_api.dll file has already been cracked! Aborting...")
-                    break
-                    
-                if config["Preferences"]["CrackOption"] == "0":
-                    if config["FileNames"]["SteamAPI"] == "":
-                        os.remove(apiFile)
-                    else:
-                        shutil.move(apiFile, root_dir + "/" + config["FileNames"]["SteamAPI"])
-                    shutil.copyfile(configDir + "steam_api.dll", apiFile)
+                    update_logs("[!] steam_api.dll: could not retrieve the file version! Seems like the steam_api.dll file has already been cracked! Aborting...")
+                    EndCrack()
+                    return
+                
+                update_logs(f"- Found steam_api.dll in {root_dir}, planning crack application")
 
             if "steam_api64.dll" in files:
                 if config["FileNames"]["SteamAPI64"] in files:
-                    update_logs("[!] Seems like a file named " + config["FileNames"]["SteamAPI64"] + " is present. This could indicate that steam_api64.dll has already been cracked! Aborting...")
-                    break
+                    update_logs("[!] Seems like a file named " + config["FileNames"]["SteamAPI64"] + " is present. This could indicate that steam_api64.dll has already been cracked! Overwriting steam_api64.dll. No backup of the previous steam_api64.dll could be created, and the file has been deleted. " + config["FileNames"]["SteamAPI64"] + " has been restored.")
+                    os.remove(root_dir + "/steam_api64.dll")
+                    shutil.move(root_dir + "/" + config["FileNames"]["SteamAPI64"], root_dir + "/steam_api64.dll")
                 
                 apiFile = root_dir + "/steam_api64.dll"
                 try:
                     apiFileVersion = GetFileVersion(apiFile)
                 except Exception:
-                    update_logs("[!] Seems like the steam_api64.dll file has already been cracked! Aborting...")
-                    break
+                    update_logs("[!] steam_api64.dll: could not retrieve the file version! Seems like the steam_api64.dll file has already been cracked! Aborting...")
+                    EndCrack()
+                    return
 
-                if config["Preferences"]["CrackOption"] == "0":
-                    if config["FileNames"]["SteamAPI64"] == "":
-                        os.remove(apiFile)
-                    else:
-                        shutil.move(apiFile, root_dir + "/" + config["FileNames"]["SteamAPI64"])
-                    shutil.copyfile(configDir + "steam_api64.dll", apiFile)
+                update_logs(f"- Found steam_api64.dll in {root_dir}, planning crack application")
 
             if apiFile != "":
-                # Prepare the crack config file
-                with open(configDir + "EmuConfigTemplate.ini", "r", encoding="utf-8") as template:
-                    fileContent = template.read()
-                fileContent = fileContent.replace("SAC_AppID", str(appID))
-                fileContent = fileContent.replace("SAC_APIVersion", apiFileVersion)
-                buffer = ""
-                for i in range(len(dlcIDs)):
-                    buffer += str(dlcIDs[i]) + " = " + dlcNames[i] + "\n"
-                fileContent = fileContent.replace("SAC_DLC", buffer)
-
-                # Create the crack config file
-                fileLocation = ""
-                if config["Preferences"]["CrackOption"] == "0" or config["Preferences"]["CrackOption"] == "1":
-                    fileLocation = root_dir + "/" + config["FileNames"]["EmuConfig"]
-                else:
-                    fileLocation = config["FileNames"]["EmuConfig"]
-
-                with open(fileLocation, "w", encoding="utf-8") as file:
-                    file.write(fileContent)
-
-                update_logs(f"- Found Steam API DLL(s) in {root_dir} and cracked them successfully")
+                if root_dir not in dllLocations:
+                    dllLocations.append(root_dir)
+                
                 cracked = True
                 root.update()
+        
+        for dllCurrentLocation in dllLocations:
+            for root_dir, dirs, files in os.walk(configDir):
+                relativeRootDir = root_dir[len(configDir) + 1:]
+                dllAbsoluteRelativeLocation = os.path.join(dllCurrentLocation, relativeRootDir)
+                
+                # To make it look right, add a "\" at the end of relativeRootDir if it is not empty
+                if len(relativeRootDir) > 0:
+                    relativeRootDir += "\\"
+                
+                # Create all missing directories
+                for dir in dirs:
+                    if not os.path.isdir(os.path.join(dllAbsoluteRelativeLocation, dir)):
+                        os.mkdir(os.path.join(dllAbsoluteRelativeLocation, dir))
+                        update_logs("Created new directory " + relativeRootDir + dir)
+                        root.update()
+                
+                # Create all files
+                for fileName in files:
+                    root.update()
+                    if os.path.isfile(os.path.join(dllAbsoluteRelativeLocation, fileName)): # The file already exists in the game, rename it to .bak
+                        newName = fileName + config["FileNames"]["BakSuffix"]
+                        if fileName == "steam_api.dll" or fileName == "steam_api64.dll":
+                            if config["Preferences"]["CrackOption"] != "0": # Only create config
+                                update_logs("Ignoring " + relativeRootDir + fileName + " because of the set crack approach")
+                                continue
+                            
+                            if fileName == "steam_api.dll":
+                                newName = config["FileNames"]["SteamAPI"]
+                            else:
+                                newName = config["FileNames"]["SteamAPI64"]
+                            
+                        if newName == "": # Don't keep a backup of the steam_api(64).dll file
+                            os.remove(os.path.join(dllAbsoluteRelativeLocation, fileName))
+                            update_logs("Removed old " + relativeRootDir + fileName + " file because no backup file name is set")
+                        elif os.path.isfile(os.path.join(dllAbsoluteRelativeLocation, newName)): # A backup of this file already exists, the game might already be cracked, abort!
+                            update_logs("[!] Seems like the backup of " + relativeRootDir + fileName + " file already exists! This could indicate that the game has already been cracked. Overwriting it. No backup of " + relativeRootDir + fileName + " could be created, and the file has been deleted.")
+                            os.remove(os.path.join(dllAbsoluteRelativeLocation, fileName))
+                        else:
+                            shutil.move(os.path.join(dllAbsoluteRelativeLocation, fileName), os.path.join(dllAbsoluteRelativeLocation, newName))
+                            update_logs("Backupped old file " + relativeRootDir + fileName + " -> " + newName)
+                    elif fileName == "steam_api.dll" or fileName == "steam_api64.dll": # No existing file, and this file is the steam_api(64).dll one
+                        continue # Ignore this file
+                    
+                    shutil.copyfile(os.path.join(root_dir, fileName), os.path.join(dllAbsoluteRelativeLocation, fileName))
+                    
+                    # Check if ends with a specific extension, so we can replace the presets inside
+                    if any(fileName.endswith(extension) for extension in EXTS_TO_REPLACE):
+                        # Read the file's content
+                        with open(os.path.join(dllAbsoluteRelativeLocation, fileName), "r", encoding="utf-8") as file:
+                            fileContent = file.read()
+                        
+                        # Replace the presets if any
+                        fileContent = fileContent.replace("SAC_AppID", str(appID))
+                        fileContent = fileContent.replace("SAC_APIVersion", apiFileVersion)
+                        buffer = ""
+                        for i in range(len(dlcIDs)):
+                            buffer += str(dlcIDs[i]) + " = " + dlcNames[i] + "\n"
+                        fileContent = fileContent.replace("SAC_DLC", buffer)
+                        buffer = ""
+                        for i in range(len(dlcIDs)):
+                            buffer += str(dlcIDs[i]) + "=" + dlcNames[i] + "\n"
+                        fileContent = fileContent.replace("SAC_NoSpaceDLC", buffer)
+
+                        # Write the changes
+                        with open(os.path.join(dllAbsoluteRelativeLocation, fileName), "w", encoding="utf-8") as file:
+                            file.write(fileContent)
+                    
+                    update_logs("Created new file " + relativeRootDir + fileName)
+                        
 
         update_logs("\n-----\nFinished cracking the game!")
         if not cracked:
             update_logs("[!] No Steam API DLL was found in the game!")
         else:
-            update_logs("The game has been cracked successfully! (Don't attempt to crack it again, or SAC will fail doing so, or the game might just stop working.)")
+            update_logs("The game has been cracked successfully! (If you attempt to crack if again, SAC will try its best to make it work, but will let some leftovers of old cracks.)")
         
+        EndCrack()
+    
+    def EndCrack():
         # Cracking process done!
         ReloadConfig() # Reload the config to remove the overwritten config from config_override.ini
         
@@ -466,7 +519,6 @@ try: # Handles Python errors to write them to a log file so they can be reported
         searchGameButton.config(state=tk.NORMAL)
         selectCrackButton.config(state=tk.NORMAL)
         crackGameButton.config(state=tk.NORMAL)
-        
 
     # ----- Settings -----
     
@@ -561,6 +613,14 @@ try: # Handles Python errors to write them to a log file so they can be reported
         GameEXE_var.set(config["FileNames"]["GameEXE"])
         ttk.Button(fileNamesFrame, text="Save", padding=3, command=lambda: UpdateFileName("GameEXE", GameEXE_var)).grid(row=2, column=2, ipadx=10)
         
+        tk.Label(fileNamesFrame, text="Other files backup suffix:").grid(row=3, column=0)
+        global BakSuffix_var
+        BakSuffix_var = tk.StringVar()
+        steamApiEntry = tk.Entry(fileNamesFrame, width=35, textvariable=BakSuffix_var)
+        steamApiEntry.grid(row=3, column=1, ipadx=10, ipady=3)
+        BakSuffix_var.set(config["FileNames"]["BakSuffix"])
+        ttk.Button(fileNamesFrame, text="Save", padding=3, command=lambda: UpdateFileName("BakSuffix", BakSuffix_var)).grid(row=3, column=2, ipadx=10)
+        
         # Advanced
         ttk.Label(scrollFrame, text="Advanced:", font=FONT3, padding=0).pack(padx=(6, 0), pady=(10,0), anchor="w")
         ttk.Label(scrollFrame, text="Advanced settings, don't modify unless you know what you're doing.", font=FONT4, padding=0, foreground="#575757", wraplength=600).pack(padx=(6, 0), pady=(0,0), anchor="w")
@@ -610,18 +670,21 @@ try: # Handles Python errors to write them to a log file so they can be reported
         SteamApi_var.set(config["FileNames"]["SteamAPI"])
         SteamApi64_var.set(config["FileNames"]["SteamAPI64"])
         GameEXE_var.set(config["FileNames"]["GameEXE"])
+        BakSuffix_var.set(config["FileNames"]["BakSuffix"])
         RetryDelay_var.set(config["Advanced"]["RetryDelay"])
         RetryMax_var.set(config["Advanced"]["RetryMax"])
 
     # ----- Crack List -----
     
     crackList = { # A list of all selectable cracks
-        "game_ali213": ["ALI213 (Game)", "The ALI213 is currently the only supported crack for cracking a full game by SAC. It will unlock all DLCs and will also prevent the game from connecting to the internet.\nThe game folder can then freely be shared with others as the crack is contained inside the game folder."],
+        "game_ali213": ["ALI213 (Game)", "The ALI213 crack is simple and can crack a full game. It will unlock all DLCs and will also prevent the game from connecting to the internet.\nThe game folder can then freely be shared with others as the crack is contained inside the game folder.\nIf it doesn't work, consider using Goldberg instead."],
+        "game_goldberg": ["Goldberg (Game)", "The Goldberg (experimental) crack is similar to ALI213's one.\nIt is open-source, which is better, but might not work with older games, due to SAC's current partial support.\nThis crack will however work better for recent games, where ALI213 could fail.\nInternet connection is blocked, but LAN is enabled."],
         "dlc_creamapi": ["CreamAPI (DLC)", "The CreamAPI crack will unlock all DLCs but will not crack the main game. It is meant to be used with bought copies of a game, with your real Steam account.\nOnly use this is you have purchased the game on Steam and want to unlock its DLCs.\nWill not work for most online games, but might exceptionally work with some like Beat Saber."]
     }
     
     crackListSteamless = { # Whether to use Steamless with a specific crack. True = use Steamless
         "game_ali213": True,
+        "game_goldberg": True,
         "dlc_creamapi": False
     }
     
@@ -696,6 +759,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
             
             config["FileNames"] = {}
             config["FileNames"]["GameEXE"] = ".bak"
+            config["FileNames"]["BakSuffix"] = ".bak"
             config["FileNames"]["SteamAPI"] = "steam_api.dll.bak"
             config["FileNames"]["SteamAPI64"] = "steam_api64.dll.bak"
             

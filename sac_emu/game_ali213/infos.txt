@@ -1,7 +1,0 @@
-Steam Auto Cracker will use these .dlls:
-- Always, except if:
-	- If the game is at the BOUGHT Steam games location and crackownedgames is set to 0.
-
-The goal of this is to crack the game as well as unlock every DLC for an uncracked game.
-
-The default DLLs included are: ALI213 v7.30.20.28 (source: https://cs.rin.ru/forum/viewtopic.php?p=2654211#p2654211)

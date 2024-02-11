@@ -1,7 +1,0 @@
-Steam Auto Cracker will use these .dlls:
-- If the game is at the BOUGHT Steam games location
-- If crackownedgames is set to 0
-
-The goal of this is to unlock all DLCs for a legit bought Steam game.
-
-The default DLLs included are: CreamAPI v4.5.0.0 non-log build

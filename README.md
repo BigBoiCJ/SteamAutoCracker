@@ -6,6 +6,8 @@
 
 An open-source script that automatically Cracks (removes DRM from) Steam games
 
+[-> See the main branch here <-](https://github.com/BigBoiCJ/SteamAutoCracker)
+
 ## GUI Edition
 This branch contains the Graphical User Interface version of Steam Auto Cracker.\
 It is coded a bit differently, and will probably replace the console version soon.

@@ -30,7 +30,7 @@ An open-source script that automatically Cracks (removes DRM from) Steam games
 - Open source, transparent and privacy focused. No hidden analytics or weird things!
 
 ## Screenshots
-Screenshots from v2.0.0.
+Screenshots from v2.0.0
 
 <details>
 <summary>Images</summary>
@@ -73,7 +73,7 @@ __* Exception to leftovers:__
 - There will be some leftovers if you use the compiled exe. This is due to how PyInstaller / auto-py-to-exe works. An embedded version of Python and the python script itself will be extracted to the temp-folder of your OS. The folder will be named `_MEIxxxxxx`, where xxxxxx is a random number. You can delete the folder at any time after using the program, as it might not correctly delete itself in all cases. Please check the [pyinstaller documentation](https://pyinstaller.org/en/stable/operating-mode.html#how-the-one-file-program-works) for more infos.
 
 ## Virus detection
-You could get a virus detection on some files. The biggest offender is `sac_emu\game\steam_api.dll`.\
+You could get a virus detection on some files. The biggest offender is `sac_emu/game_ali213/files/steam_api.dll`.\
 A lot of cracking tools are detected as malware, either because their behavior is suspect (bypass game protections), or because they have been flagged manually (happens with a lot of tools).\
 If you're suspicious about the legitimacy of the files, just delete the DLLs and use your owns instead.\
 You can discuss with others about the tool in [cs.rin.ru](https://cs.rin.ru/forum/viewtopic.php?f=10&t=120610) or in the GitHub issues.

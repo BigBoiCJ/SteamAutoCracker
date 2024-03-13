@@ -6,45 +6,38 @@
 
 An open-source script that automatically Cracks (removes DRM from) Steam games
 
-**Setup tip:** you can paste text by using the right click.\
-Left clicking will automatically copy the selected text, so don't do that.
-
 ## How to use (easy way)
-- Download the bundled/compiled version by clicking [here](https://github.com/BigBoiCJ/SteamAutoCracker/releases/tag/1.2.10) and downloading the file named `Steam.Auto.Cracker.vX.X.X.zip`
+- Download the bundled/compiled version by clicking [here](https://github.com/BigBoiCJ/SteamAutoCracker/releases/latest) and downloading the file named `Steam.Auto.Cracker.GUI.vX.X.X.zip`
 - Extract the content of the archive (.zip) somewhere on your computer
-- Run `steam_auto_cracker.exe`
-- Enter the location of your Steam games (bought ones). If you don't want to crack or DLC unlock your bought games, don't write anything and press ENTER.
-  - You can get the location of a folder by navigating to it, and then right-clicking on the navigation bar and selecting "Copy address as text". You can paste in SAC by right-clicking.
-- Enter the location of your Pirated games. Every folder inside this location will be crackable by SAC. All the games you want to crack must be located directly in this folder.
-- Now configure SAC as you wish. Here are the recommended choices:
-  - `0 - Crack the game automatically`
-  - `0 - Don't attempt to crack BOUGHT games` (you can crack them later anyway by putting them in your Pirated games location)
-  - `1 - Attempt to use Steamless (recommended)`
-  - Press enter without writing anything (don't keep the default .exe)
-  - Press enter without writing anything (don't keep the default steam_api.dll)
-  - Press enter without writing anything (don't keep the default steam_api64.dll)
-- You're done! Now you can just enter the name of a game to try to crack it! (you can also enter the Steam AppID if you know it)
-  - SAC will automatically attempt to find the matching folder in your Steam games location or your Pirated games location. If it doesn't find it, it'll ask you to manually enter it.
+- Run `steam_auto_cracker_gui.exe`
+- Select the folder of your game
+- Enter the name of the game to try to crack it! (you can also enter the Steam AppID if you know it)
+  - SAC will automatically attempt to find the AppID using the Name you provided. If it can't, please try entering the AppID yourself.
+  - You can find the AppID in the URL of the game's Steam page (ex: store.steampowered.com/app/-> ***620980*** <-/Beat_Saber/)
 
 ## Features
-- Automatically cracks your bought or pirated Steam games. You only need to enter the Game Name or AppID.
+- Automatically cracks your bought or pirated Steam games. You only need to select the game's folder, and enter the Game Name or AppID.
   - Cracks **Steam API DRM** by applying and configuring **Steam Emulators** automatically
   - Cracks **Steam Stub DRM** by applying **Steamless** on executables automatically
 - No Steam account or Steam API key needed
 - Configurable to your liking
 - Option to only unlock DLCs for your bought Steam games instead of cracking them entirely
-- Option to choose your own Steam Emu thanks to a simple config template system (default: ALI213)
+- Option to choose your own Steam Emu thanks to a simple list, and simple config template system (default: ALI213)
+  - List of Steam emus included by default:
+    - ALI213 (Game)
+    - Goldberg (Game)
+    - CreamAPI (DLC)
 - Open source, transparent and privacy focused. No hidden analytics or weird things!
 
 ## Screenshots
-Screenshots from v1.0.0, they might be a bit outdated.
+Screenshots from v2.0.0.
 
-Setup:
-![image](https://user-images.githubusercontent.com/101492671/158049430-d1d7f352-4060-4266-bd9a-5e022c365a29.png)\
-Cracking phase 1:
-![image](https://user-images.githubusercontent.com/101492671/158049508-20a821c0-22cd-46fe-b6ee-1ef4551cbfc7.png)\
-Cracking phase 2:
-![image](https://user-images.githubusercontent.com/101492671/158049553-5b41d992-d144-4851-b6cb-ed3eeb528b82.png)
+<details>
+<summary>Images</summary>
+<img src="https://github.com/BigBoiCJ/SteamAutoCracker/assets/101492671/6b9cd91e-9ff1-42a2-9efb-09586d41dbd3" width=50% height=50%>
+<img src="https://github.com/BigBoiCJ/SteamAutoCracker/assets/101492671/039d5af8-1bad-47ec-b4c0-b164cc0388eb" width=50% height=50%>
+<img src="https://github.com/BigBoiCJ/SteamAutoCracker/assets/101492671/25f0c44c-262f-4358-b694-fb0792bbcf52" width=50% height=50%>
+</details>
 
 ## Requirements
 - An internet connection (SAC will do requests to `steampowered.com` to retrieve AppIDs and DLCs)
@@ -54,7 +47,8 @@ Cracking phase 2:
   - The `requests` module. Install with `py -m pip install requests` or `python -m pip install requests` or `python3 -m pip install requests`
   - The `pywin32` module (which contains win32api). Install with `py -m pip install pywin32` or `python -m pip install pywin32` or `python3 -m pip install pywin32`
     - If you have any problem, please check https://pypi.org/project/pywin32/
-  - I think Python 3+ is needed.
+  - The `tkinter` module, but it should be included in Python by default.
+  - I believe Python 3.7+ is needed.
 
 ## Notes about DLCs
 Some DLCs in some games requires you to download additional files.\
@@ -87,5 +81,5 @@ You can discuss with others about the tool in [cs.rin.ru](https://cs.rin.ru/foru
 ## Thanks
 - Thanks to [atom0s for their Steamless project](https://github.com/atom0s/Steamless)
 - Thanks to [oureveryday for their Steamless fork, supporting command-line](https://github.com/oureveryday/Steamless_CLI) (no longer used)
-- Thanks to the creators of Steam Emus, speficially those who are included: ALI213 and deadmau5 (creator of CreamAPI)
+- Thanks to the creators of Steam Emus, speficially those who are included: ALI213, Goldberg and deadmau5 (creator of CreamAPI)
 - Thanks to CS.RIN.RU and their members for being helpful and sharing quality uploads

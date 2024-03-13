@@ -1,4 +1,7 @@
-# SteamAutoCracker (GUI branch)
+# SteamAutoCracker (GUI branch) - OUTDATED
+
+### [OUTDATED BRANCH, PLEASE CHECK THE main BRANCH INSTEAD](https://github.com/BigBoiCJ/SteamAutoCracker)
+
 ![GitHub all releases](https://img.shields.io/github/downloads/BigBoiCJ/SteamAutoCracker/total?color=brightgreen&label=Total%20downloads)
 ![GitHub release (latest by date)](https://img.shields.io/github/downloads/BigBoiCJ/SteamAutoCracker/latest/total?color=green&label=Latest%20version%20downloads)
 ![GitHub Repo stars](https://img.shields.io/github/stars/BigBoiCJ/SteamAutoCracker?color=yellow&label=Stars)

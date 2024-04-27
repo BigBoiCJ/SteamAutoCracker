@@ -1,0 +1,3 @@
+The goal of this is to remove the SteamStub DRM from Steam games executable (.exe) files.
+
+The version included is: Steamless v3.1.0.5 (CLI) (source: https://github.com/atom0s/Steamless/releases/tag/v3.1.0.5)

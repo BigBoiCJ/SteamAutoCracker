@@ -12,6 +12,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     import json
     import os
     import subprocess
+    import re
     from sac_lib.get_file_version import GetFileVersion
     import shutil
     from time import sleep
@@ -71,6 +72,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     def select_folder():
         global folder_path
         folder_path = filedialog.askdirectory()
+        folder_name = re.sub(r".*(\\|/)?([^\\]+)(\\|/)", "", folder_path)
         if not os.path.isdir(folder_path):
             update_logs("\nNo folder has been selected")
             selectedFolderLabel.config(text="")
@@ -84,8 +86,12 @@ try: # Handles Python errors to write them to a log file so they can be reported
         selectedFolderLabel.config(text=f"Selected folder:\n{folder_path}")
         selectedFolderLabel.pack()
         frameGame2.pack()
+        gameNameEntry.delete(0, last=len(gameNameEntry.get()))
+        gameNameEntry.insert(0, folder_name)
         if gameSearchDone:
             frameCrack2.pack()
+            gameNameEntry.delete(0, last=len(gameNameEntry.get()))
+            gameNameEntry.insert(0, folder_name)
 
     def update_logs(log_message):
         # Get current content

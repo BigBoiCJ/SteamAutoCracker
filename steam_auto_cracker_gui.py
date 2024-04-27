@@ -16,7 +16,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     import shutil
     from time import sleep
 
-    VERSION = "2.0.1"
+    VERSION = "2.0.2"
 
     RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
     RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
@@ -824,6 +824,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
     # Let's now create the main window
     root = tk.Tk()
+    root.resizable(False, False) # Prevents resizing the window's width and height
     root.title(f"SteamAutoCracker GUI v{VERSION}")
 
     DEFAULT_FONT = font.nametofont('TkTextFont')

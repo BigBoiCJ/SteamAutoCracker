@@ -121,8 +121,8 @@ try: # Handles Python errors to write them to a log file so they can be reported
         appID = 0
         if gameNameEntry.get() == "":
             update_logs("\n[!] Please enter a valid Name or AppID")
-            selectFolderButton.config(state=tk.NORMAL) # Re-enable the ability to change the selected folder
             searchGameButton.config(state=tk.NORMAL)  # Re-enable the ability to search the game
+            selectFolderButton.config(state=tk.NORMAL) # Re-enable the ability to change the selected folder
             return
         
         try:

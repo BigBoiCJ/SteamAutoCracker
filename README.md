@@ -87,3 +87,5 @@ You can discuss with others about the tool in [cs.rin.ru](https://cs.rin.ru/foru
 - Thanks to [oureveryday for their Steamless fork, supporting command-line](https://github.com/oureveryday/Steamless_CLI) (no longer used)
 - Thanks to the creators of Steam Emus, speficially those who are included: ALI213, Goldberg and deadmau5 (creator of CreamAPI)
 - Thanks to CS.RIN.RU and their members for being helpful and sharing quality uploads
+- Thanks to our contributors that propose code, report issues and give suggestions! The most notable ones will be quoted in releases' notes
+  - Even if you're not credited, that doesn't mean you didn't help! I thank everyone :heart:

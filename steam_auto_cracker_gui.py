@@ -15,8 +15,9 @@ try: # Handles Python errors to write them to a log file so they can be reported
     from sac_lib.get_file_version import GetFileVersion
     import shutil
     from time import sleep
+    from sys import exit
 
-    VERSION = "2.0.2"
+    VERSION = "2.1.0"
 
     RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
     RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
@@ -31,6 +32,9 @@ try: # Handles Python errors to write them to a log file so they can be reported
     STATE_UpdatingAppList = False
     
     EXTS_TO_REPLACE = (".txt", ".ini", ".cfg")
+    
+    GITHUB_LATESTVERSIONJSON = "https://raw.githubusercontent.com/BigBoiCJ/SteamAutoCracker/autoupdater/latestversion.json"
+    GITHUB_AUTOUPDATER = "https://raw.githubusercontent.com/BigBoiCJ/SteamAutoCracker/autoupdater/steam_auto_cracker_gui_autoupdater.exe"
     
     def OnTkinterError(exc, val, tb):
         # Handle Tkinter Python errors
@@ -60,6 +64,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 if self.tries < int(config["Advanced"]["RetryMax"]):
                     # Do another try
                     update_logs("- " + self.name + " request failed, retrying in " + config["Advanced"]["RetryDelay"] + "s... (" + str(self.tries) + "/" + config["Advanced"]["RetryMax"] + " tries)")
+                    root.update()
                     sleep(int(config["Advanced"]["RetryDelay"]))
                     self.DoRequest()
                 else:
@@ -78,12 +83,15 @@ try: # Handles Python errors to write them to a log file so they can be reported
             frameGame2.pack_forget()
             frameCrack2.pack_forget() # Hide the crack frame
             return
-            
+        
+        folder_name = os.path.basename(folder_path) # Gets the name of the folder ("C:/Something/Games/Hello" will return "Hello")
         log_message = f"Sélection du dossier : {folder_path}"
         update_logs(f"\nSelected folder: {folder_path}")
         selectedFolderLabel.config(text=f"Selected folder:\n{folder_path}")
         selectedFolderLabel.pack()
         frameGame2.pack()
+        gameNameEntry.delete(0, tk.END) # Removes the content of the Entry element starting from index 0 to the end
+        gameNameEntry.insert(0, folder_name) # Inserts the name of the folder in the Entry element at the start of it (index 0)
         if gameSearchDone:
             frameCrack2.pack()
 
@@ -526,6 +534,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         top = tk.Toplevel(root)
         #top.geometry("750x250")
         top.title(f"SteamAutoCracker GUI v{VERSION} - Settings")
+        top.resizable(False, False) # Prevents resizing the window's width and height
         biggerFont = DEFAULT_FONT.copy()
         biggerFont.config(size=10)
         ttk.Label(top, text= "Settings", font=FONT2).pack(padx=200, pady=(10,10), anchor="center")
@@ -554,6 +563,19 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
         scrollFrame.bind("<Configure>", configure_canvas)
         # Finished handling scrolling
+        
+        # Update options (UpdateOption)
+        ttk.Label(scrollFrame, text="Updates:", font=FONT3, padding=0).pack(padx=(6, 0), pady=(10,0), anchor="w")
+        ttk.Label(scrollFrame, text="This will search the latest version on GitHub.\nIf you're afraid of leaking your IP to GitHub, use a VPN and/or disable auto updating.", font=FONT4, padding=0, foreground="#575757", wraplength=600).pack(padx=(6, 0), pady=(0,0), anchor="w")
+        settings_frame_updates = ttk.Frame(scrollFrame)
+        settings_frame_updates.pack(padx=(15, 0), pady=(0, 0), anchor="w")
+        
+        ## Radio
+        global UpdateOption_var
+        UpdateOption_var = tk.StringVar()
+        UpdateOption_var.set(config["Preferences"]["UpdateOption"])
+        ttk.Radiobutton(settings_frame_updates, text="Don't automatically check for updates (RECOMMENDED FOR PRIVACY)", variable=UpdateOption_var, value="0", command=lambda: UpdateConfigKey("Preferences", "UpdateOption", UpdateOption_var.get())).grid(row=0, column=0, sticky="w")
+        ttk.Radiobutton(settings_frame_updates, text="Automatically check for updates on SAC start (RECOMMENDED FOR CONVENIENCE)", variable=UpdateOption_var, value="1", command=lambda: UpdateConfigKey("Preferences", "UpdateOption", UpdateOption_var.get())).grid(row=1, column=0, sticky="w")
         
         # Crack approach (CrackOption)
         ttk.Label(scrollFrame, text="Crack approach:", font=FONT3, padding=0).pack(padx=(6, 0), pady=(10,0), anchor="w")
@@ -671,6 +693,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         ResetConfig(1)
         
         # Update the radio buttons values
+        UpdateOption_var.set(config["Preferences"]["UpdateOption"])
         CrackOption_var.set(config["Preferences"]["CrackOption"])
         Steamless_var.set(config["Preferences"]["Steamless"])
         SteamApi_var.set(config["FileNames"]["SteamAPI"])
@@ -698,6 +721,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     def DisplayCrackList():
         top = tk.Toplevel(root)
         top.title(f"SteamAutoCracker GUI v{VERSION} - Crack List")
+        top.resizable(False, False) # Prevents resizing the window's width and height
         biggerFont = DEFAULT_FONT.copy()
         biggerFont.config(size=10)
         ttk.Label(top, text= "Crack List", font=FONT2).pack(padx=200, pady=(10,10), anchor="center")
@@ -766,6 +790,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         
         if resetLevel == 0 or resetLevel == 1:
             currentConfig["Preferences"] = {}
+            currentConfig["Preferences"]["UpdateOption"] = "0"
             currentConfig["Preferences"]["CrackOption"] = "0"
             currentConfig["Preferences"]["Steamless"] = "1"
             
@@ -820,6 +845,106 @@ try: # Handles Python errors to write them to a log file so they can be reported
     ReloadConfig()
 
     # ---------------------------------------
+    
+    def CheckUpdates():
+        updatesButton.config(text="Searching for updates...", state=tk.DISABLED)
+        root.update()
+        
+        req = SACRequest(GITHUB_LATESTVERSIONJSON, "RetrieveLatestVersionJson").req
+        data = req.json()
+        global latestversion
+        latestversion = data["version"]
+        if latestversion == VERSION: # The latest stable version is the one we're running
+            updatesButton.config(text="SAC is up to date!", state=tk.NORMAL)
+            return
+        
+        global release_link
+        release_link = data["release"]
+        release_link = release_link.replace("[VERSION]", latestversion)
+        
+        updatesButton.config(text="SAC is outdated!", state=tk.NORMAL)
+        DisplayUpdate()
+    
+    def DisplayUpdate():
+        top = tk.Toplevel(root)
+        top.title(f"SteamAutoCracker GUI v{VERSION} - Update")
+        top.resizable(False, False) # Prevents resizing the window's width and height
+        biggerFont = DEFAULT_FONT.copy()
+        biggerFont.config(size=10)
+        ttk.Label(top, text= "Update", font=FONT2).pack(padx=200, pady=(10,10), anchor="center")
+        ttk.Label(top, text="A new update for Steam Auto Cracker GUI is available.\nDo you want to download it automatically?", font=biggerFont, padding=0).pack(padx=(6, 0), pady=(10,0), anchor="w")
+        ttk.Label(top, text=f"Current version: {VERSION}", font=biggerFont, padding=0).pack(padx=(6, 0), pady=(15,0), anchor="w")
+        ttk.Label(top, text=f"Latest version: {latestversion}", font=biggerFont, padding=0).pack(padx=(6, 0), pady=(0,10), anchor="w")
+        
+        updateDisplayButtonsFrame = ttk.Frame(top)
+        updateDisplayButtonsFrame.pack(pady=(5,20))
+        
+        global updateDisplayButtonUpdate
+        updateDisplayButtonUpdate = ttk.Button(updateDisplayButtonsFrame, text="Update now", command=UpdateSAC, padding=3)
+        updateDisplayButtonUpdate.grid(row=0, column=0)
+        
+        global updateDisplayButtonCopy
+        updateDisplayButtonCopy = ttk.Button(updateDisplayButtonsFrame, text="Copy the release URL", command=CopyReleaseURL, padding=3)
+        updateDisplayButtonCopy.grid(row=0, column=1, padx=(50,0))
+        
+        global updateDisplayButtonClose
+        updateDisplayButtonClose = ttk.Button(updateDisplayButtonsFrame, text="Don't update yet", command=top.destroy, padding=3)
+        updateDisplayButtonClose.grid(row=0, column=2, padx=(50,0))
+        
+        global updateDisplayStatusLabel
+        updateDisplayStatusLabel = ttk.Label(top, text="", font=biggerFont, padding=0)
+        
+        top.grab_set() # Catches all interactions, prevents the user from interacting with the root window
+        
+        global updateDisplayTop
+        updateDisplayTop = top
+    
+    def UpdateSAC():
+        updateDisplayButtonUpdate.config(state=tk.DISABLED)
+        updateDisplayButtonCopy.config(state=tk.DISABLED)
+        updateDisplayButtonClose.config(state=tk.DISABLED)
+        
+        updateDisplayStatusLabel.pack(pady=(0,20), anchor="center")
+        updateDisplayStatusLabel.config(text="Downloading the autoupdater, please wait...\nThis might take some time depending on your internet connection speed...")
+        root.update()
+        
+        # Check for the existence of a leftover autoupdater
+        if os.path.isfile("steam_auto_cracker_gui_autoupdater.exe"):
+            try:
+                os.remove("steam_auto_cracker_gui_autoupdater.exe")
+            except Exception: # In case the file is locked for example
+                updateDisplayButtonUpdate.config(state=tk.NORMAL)
+                updateDisplayButtonCopy.config(state=tk.NORMAL)
+                updateDisplayButtonClose.config(state=tk.NORMAL)
+                updateDisplayStatusLabel.config(text="An error occurred. The autoupdater (steam_auto_cracker_gui_autoupdater.exe) already exists.\nSAC couldn't delete the autoupdater. Please try to remove it yourself, or try again.")
+                root.update()
+                return
+            print("Removed leftover autoupdater")
+        
+        # Override RetryDelay and RetryMax
+        config["Advanced"]["RetryDelay"] = "3"
+        config["Advanced"]["RetryMax"] = "5"
+        
+        req = SACRequest(GITHUB_AUTOUPDATER, "DownloadAutoupdater").req
+        
+        updateDisplayStatusLabel.config(text="Writing the autoupdater, please wait...")
+        root.update()
+        
+        with open("steam_auto_cracker_gui_autoupdater.exe", mode="wb") as file:
+            file.write(req.content)
+        
+        updateDisplayStatusLabel.config(text="Autoupdater installed!\nStarting it in 3 seconds...")
+        root.update()
+        
+        sleep(3)
+        subprocess.Popen("steam_auto_cracker_gui_autoupdater.exe") # Open SAC GUI Autoupdater
+        exit()
+    
+    def CopyReleaseURL():
+        root.clipboard_clear()
+        root.clipboard_append(release_link)
+    
+    # ---------------------------------------
 
 
     # Let's now create the main window
@@ -846,7 +971,12 @@ try: # Handles Python errors to write them to a log file so they can be reported
     style.configure("TText", padding=6)
 
     ttk.Label(root, text=f"SteamAutoCracker GUI v{VERSION}", font=FONT2, padding=0).pack(pady=(10, 0), anchor="center")
-    ttk.Label(root, text="by BigBoiCJ", padding=0).pack(pady=(0, 20), anchor="center")
+    ttk.Label(root, text="by BigBoiCJ", padding=0).pack(pady=(0, 0), anchor="center")
+    
+    updatesFrame = tk.Frame(root)
+    updatesButton = ttk.Button(updatesFrame, text="Check for updates", command=CheckUpdates, padding=0)
+    updatesButton.grid(row=0, column=0)
+    updatesFrame.pack(pady=(0, 20))
 
     ttk.Button(root, text="Settings", command=SettingsButton, padding=8).pack(pady=(0, 20), anchor="center")
 
@@ -926,6 +1056,18 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
     # Handle errors to log them while tkinter is running
     root.report_callback_exception = OnTkinterError
+    
+    # Check for the existence of a leftover autoupdater
+    if os.path.isfile("steam_auto_cracker_gui_autoupdater.exe"):
+        try:
+            os.remove("steam_auto_cracker_gui_autoupdater.exe")
+        except Exception: # In case the file is locked for example
+            pass
+    
+    # Check for updates
+    if config["Preferences"]["UpdateOption"] == "1":
+        CheckUpdates()
+    
     # Start main loop
     root.mainloop()
 

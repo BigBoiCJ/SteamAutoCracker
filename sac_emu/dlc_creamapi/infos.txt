@@ -1,3 +1,0 @@
-The goal of this is to unlock all DLCs for a legit bought Steam game.
-
-The DLLs included are: CreamAPI v5.1.0.0 non-log build (source: https://cs.rin.ru/forum/viewtopic.php?f=29&t=70576)

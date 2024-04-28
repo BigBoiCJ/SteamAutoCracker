@@ -1,3 +1,0 @@
-The goal of this is to crack the game as well as unlock every DLC for an uncracked game.
-
-The DLLs included are: Goldberg (experimental) commit 475342f0 (source: https://mr_goldberg.gitlab.io/goldberg_emulator/)

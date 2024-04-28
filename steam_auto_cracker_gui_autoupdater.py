@@ -10,7 +10,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     import io
     from sys import exit
 
-    VERSION = "1.0.0"
+    VERSION = "1.0.1"
 
     RETRY_DELAY = 3 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
     RETRY_MAX = 5 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
@@ -65,9 +65,15 @@ try: # Handles Python errors to write them to a log file so they can be reported
     for file in files:
         if file in IGNORE_FILES: # Ignore specific files/directories
             continue
+        
+        skip_file = False
         for ext in IGNORE_EXTS: # Ignore specific file extensions
             if file.endswith(ext):
-                continue
+                skip_file = True
+                break
+        if skip_file:
+            continue
+        
         if file == folder_name[:-1]: # Ignore the new installation (without the last "/")
             continue
         

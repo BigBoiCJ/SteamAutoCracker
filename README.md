@@ -28,6 +28,7 @@ An open-source script that automatically Cracks (removes DRM from) Steam games
     - Goldberg (Game)
     - CreamAPI (DLC)
 - Open source, transparent and privacy focused. No hidden analytics or weird things!
+- An opt-in autoupdater and version checker. Opt-in for privacy!
 
 ## Screenshots
 Screenshots from v2.0.0
@@ -65,6 +66,9 @@ Instructions on how to compile SAC, as well as useful scripts are available here
 ## Privacy
 SAC will do requests to `steampowered.com` (Steam's official website) to retrieve AppIDs and DLCs.\
 It is not bannable, and won't cause you problems.
+
+SAC will do requests to this GitHub repository to check for updates, download the autoupdater and new releases.\
+This only happens if you decide to manually click on the "Check for updates" button, and decide to update using the autoupdater. SAC can also automatically check for updates if enabled in the settings (it is disabled by default)
 
 Nothing is logged by SAC.\
 You can delete the SAC folder at any time and there won't be any leftovers. *

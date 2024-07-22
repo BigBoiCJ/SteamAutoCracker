@@ -97,63 +97,44 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             else:
                 self.req = req
 
-    def select_folder():
-        global folder_path, last_dropped_folder
-        # Set initial directory to last dropped folder or root if none
-        initial_dir = last_dropped_folder if last_dropped_folder else "/"
-        # Open folder selection dialog
-        folder_path = filedialog.askdirectory(initialdir=initial_dir)
-        if os.path.isdir(folder_path):
-            # Update UI if valid folder selected
-            update_ui_with_selected_folder()
-        else:
-            # Reset UI if no folder selected
-            update_logs("\nNo folder has been selected")
-            selectedFolderLabel.config(text="")
-            selectedFolderLabel.pack_forget()
-            frameGame2.pack_forget()
-            frameCrack2.pack_forget()
+    def handle_folder_selection(folder_path=None, event=None):
+        global last_dropped_folder
 
-    def on_drop(event):
-        global folder_path, last_dropped_folder
-        # Clean up dropped folder path
-        folder_path = event.data.strip("{}")
-        folder_path = folder_path.replace("\\", "/")
+        # Determine the folder path based on the event type
+        if event:  # Handling drag and drop
+            folder_path = event.data.strip("{}").replace("\\", "/")
+        elif not folder_path:  # Handling button click
+            initial_dir = last_dropped_folder or "/"
+            folder_path = filedialog.askdirectory(initialdir=initial_dir)
+
         if os.path.isdir(folder_path):
-            # Update last dropped folder and UI
+            # Update the last dropped folder for future use
             last_dropped_folder = folder_path
-            update_ui_with_selected_folder()
+            folder_name = os.path.basename(folder_path)
+
+            # Update UI elements with the selected folder information
+            update_logs(f"\nSelected folder: {folder_path}")
+            selectedFolderLabel.config(text=f"Selected folder:\n{folder_path}")
+            selectedFolderLabel.pack()
+            frameGame2.pack()
+
+            # Update the game name entry with the folder name
+            gameNameEntry.delete(0, tk.END)
+            gameNameEntry.insert(0, folder_name)
+
+            # Show crack frame if game search is done
+            if gameSearchDone:
+                frameCrack2.pack()
         else:
-            update_logs("\nDropped item is not a folder")
+            # Handle invalid folder selection
+            update_logs("\nNo valid folder selected")
+            reset_ui()
 
-    def select_folder_callback():
-        if not os.path.isdir(folder_path):
-            # Reset UI if invalid folder path
-            update_logs("\nNo folder has been selected")
-            selectedFolderLabel.config(text="")
-            selectedFolderLabel.pack_forget()
-            frameGame2.pack_forget()
-            frameCrack2.pack_forget()  # Hide the crack frame
-            return
-
-    def update_ui_with_selected_folder():
-        # Extract folder name from path
-        folder_name = os.path.basename(folder_path)
-
-        # Update logs and UI elements
-        update_logs(f"\nSelected folder: {folder_path}")
-        selectedFolderLabel.config(text=f"Selected folder:\n{folder_path}")
-        selectedFolderLabel.pack()
-
-        frameGame2.pack()
-
-        # Update game name entry with folder name
-        gameNameEntry.delete(0, tk.END)
-        gameNameEntry.insert(0, folder_name)
-
-        # Show crack frame if game search is done
-        if gameSearchDone:
-            frameCrack2.pack()
+    def reset_ui():
+        selectedFolderLabel.config(text="")
+        selectedFolderLabel.pack_forget()
+        frameGame2.pack_forget()
+        frameCrack2.pack_forget()
 
     def update_logs(log_message):
         # Get current content
@@ -1426,7 +1407,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
     root.resizable(False, False)  # Prevents resizing the window's width and height
     root.title(f"SteamAutoCracker GUI v{VERSION}")
     root.drop_target_register(DND_FILES)
-    root.dnd_bind("<<Drop>>", on_drop)
+    root.dnd_bind("<<Drop>>", lambda event: handle_folder_selection(event=event))
 
     DEFAULT_FONT = font.nametofont("TkTextFont")
     FONT2 = DEFAULT_FONT.copy()
@@ -1473,7 +1454,9 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         root,
         text="Select where your game is installed :",
     ).pack(pady=(20, 5), anchor="center")
-    selectFolderButton = ttk.Button(root, text="Select a folder", command=select_folder)
+    selectFolderButton = ttk.Button(
+        root, text="Select a folder", command=lambda: handle_folder_selection()
+    )
     selectFolderButton.pack(pady=(0, 10))
 
     selectedFolderFrame = tk.Frame(

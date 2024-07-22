@@ -1,2 +1,3 @@
 requests
 pywin32
+tkinterdnd2

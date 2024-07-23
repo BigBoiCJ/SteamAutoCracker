@@ -33,7 +33,9 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
 
     EXTS_TO_REPLACE = (".txt", ".ini", ".cfg")
 
-    GITHUB_LATESTVERSIONJSON = "https://raw.githubusercontent.com/BigBoiCJ/SteamAutoCracker/autoupdater/latestversion.json"
+    GITHUB_LATESTVERSIONJSON = (
+        "https://raw.githubusercontent.com/BigBoiCJ/SteamAutoCracker/autoupdater/latestversion.json"
+    )
     GITHUB_AUTOUPDATER = "https://raw.githubusercontent.com/BigBoiCJ/SteamAutoCracker/autoupdater/steam_auto_cracker_gui_autoupdater.exe"
 
     def OnTkinterError(exc, val, tb):
@@ -140,9 +142,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         # Get current content
         current_logs = logs_text.get("1.0", tk.END)
 
-        logs_text.config(
-            state=tk.NORMAL
-        )  # Enables modification (needed to add content)
+        logs_text.config(state=tk.NORMAL)  # Enables modification (needed to add content)
         # Delete the current content
         logs_text.delete("1.0", tk.END)
 
@@ -176,9 +176,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         appID = 0
         if gameNameEntry.get() == "":
             update_logs("\n[!] Please enter a valid Name or AppID")
-            searchGameButton.config(
-                state=tk.NORMAL
-            )  # Re-enable the ability to search the game
+            searchGameButton.config(state=tk.NORMAL)  # Re-enable the ability to search the game
             selectFolderButton.config(
                 state=tk.NORMAL
             )  # Re-enable the ability to change the selected folder
@@ -193,16 +191,12 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             # We are now on step 3
             gameSearchDone = True
             frameCrack2.pack()  # Show the crack frame
-            searchGameButton.config(
-                state=tk.NORMAL
-            )  # Re-enable the ability to search the game
+            searchGameButton.config(state=tk.NORMAL)  # Re-enable the ability to search the game
             selectFolderButton.config(
                 state=tk.NORMAL
             )  # Re-enable the ability to change the selected folder
         else:
-            searchGameButton.config(
-                state=tk.NORMAL
-            )  # Re-enable the ability to search the game
+            searchGameButton.config(state=tk.NORMAL)  # Re-enable the ability to search the game
             selectFolderButton.config(
                 state=tk.NORMAL
             )  # Re-enable the ability to change the selected folder
@@ -217,9 +211,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             with open("applist.txt", "r", encoding="utf-8") as file:
                 data = json.load(file)
         except:
-            update_logs(
-                "The App List isn't downloaded on your computer, downloading it..."
-            )
+            update_logs("The App List isn't downloaded on your computer, downloading it...")
             UpdateAppList()
             return FindInAppList(appName)  # Re launch this funtion
 
@@ -308,10 +300,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             gameFoundStatus.config(text=f"AppID {appID} not found.")
             appID = 0
             return False
-        if (
-            config["Advanced"]["BypassGameVerification"] != "1"
-            and data["data"]["type"] != "game"
-        ):
+        if config["Advanced"]["BypassGameVerification"] != "1" and data["data"]["type"] != "game":
             update_logs(
                 f"\n[!] AppID {appID} is not a game. You can bypass this verification in the Advanced settings."
             )
@@ -351,9 +340,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                 for i in range(dlcIDsLen):
                     appName = RetrieveAppName(dlcIDs[i])
                     if appName == "error":
-                        update_logs(
-                            f"[!] Error! No App Name found for AppID {dlcIDs[i]}"
-                        )
+                        update_logs(f"[!] Error! No App Name found for AppID {dlcIDs[i]}")
                         gameFoundStatus.config(
                             text=f"[!] Error! No App Name found for AppID {dlcIDs[i]}"
                         )
@@ -371,9 +358,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                         + str(dlcIDs[i])
                         + ")"
                     )
-                    gameFoundStatus.config(
-                        text=f"[2/2] Retrieving DLCs... ({i+1}/{dlcIDsLen})"
-                    )
+                    gameFoundStatus.config(text=f"[2/2] Retrieving DLCs... ({i+1}/{dlcIDsLen})")
                     root.update()
             else:
                 update_logs("- No DLC found for this game!")
@@ -413,9 +398,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                     i += 1
 
                     resultsStr = ""
-                    resultsIndex = data2["results_html"].find(
-                        'data-ds-appid="', resultsIndex
-                    )
+                    resultsIndex = data2["results_html"].find('data-ds-appid="', resultsIndex)
                     resultsIndex += len('data-ds-appid="')
 
                     while data2["results_html"][resultsIndex] != '"':
@@ -433,9 +416,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                     # Retrieve DLC name
                     appName = RetrieveAppName(dlcIDs[i])
                     if appName == "error":
-                        update_logs(
-                            f"[!] Error! No App Name found for AppID {dlcIDs[i]}"
-                        )
+                        update_logs(f"[!] Error! No App Name found for AppID {dlcIDs[i]}")
                         gameFoundStatus.config(
                             text=f"Error! No App Name found for AppID {dlcIDs[i]}"
                         )
@@ -493,9 +474,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         except Exception:
             pass
 
-        configDir = os.path.join(
-            configDir, "files"
-        )  # "sac_emu/game_ali213/files" for example
+        configDir = os.path.join(configDir, "files")  # "sac_emu/game_ali213/files" for example
 
         # Check if some custom Steamless options have been set up
         steamlessOptions = ""
@@ -550,9 +529,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                     update_logs(f"- Removed Steam Stub DRM from {fileName}")
                     if config["FileNames"]["GameEXE"] != "":
                         # Rename and move back the original game's exe
-                        shutil.move(
-                            fileName, fileLocation + config["FileNames"]["GameEXE"]
-                        )
+                        shutil.move(fileName, fileLocation + config["FileNames"]["GameEXE"])
                     else:
                         # Delete the original game's exe
                         os.remove(fileName)
@@ -585,9 +562,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                     EndCrack()
                     return
 
-                update_logs(
-                    f"- Found steam_api.dll in {root_dir}, planning crack application"
-                )
+                update_logs(f"- Found steam_api.dll in {root_dir}, planning crack application")
 
             if "steam_api64.dll" in files:
                 if config["FileNames"]["SteamAPI64"] in files:
@@ -614,9 +589,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                     EndCrack()
                     return
 
-                update_logs(
-                    f"- Found steam_api64.dll in {root_dir}, planning crack application"
-                )
+                update_logs(f"- Found steam_api64.dll in {root_dir}, planning crack application")
 
             if apiFile != "":
                 if root_dir not in dllLocations:
@@ -628,9 +601,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         for dllCurrentLocation in dllLocations:
             for root_dir, dirs, files in os.walk(configDir):
                 relativeRootDir = root_dir[len(configDir) + 1 :]
-                dllAbsoluteRelativeLocation = os.path.join(
-                    dllCurrentLocation, relativeRootDir
-                )
+                dllAbsoluteRelativeLocation = os.path.join(dllCurrentLocation, relativeRootDir)
 
                 # To make it look right, add a "\" at the end of relativeRootDir if it is not empty
                 if len(relativeRootDir) > 0:
@@ -638,9 +609,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
 
                 # Create all missing directories
                 for dir in dirs:
-                    if not os.path.isdir(
-                        os.path.join(dllAbsoluteRelativeLocation, dir)
-                    ):
+                    if not os.path.isdir(os.path.join(dllAbsoluteRelativeLocation, dir)):
                         os.mkdir(os.path.join(dllAbsoluteRelativeLocation, dir))
                         update_logs("Created new directory " + relativeRootDir + dir)
                         root.update()
@@ -653,9 +622,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                     ):  # The file already exists in the game, rename it to .bak
                         newName = fileName + config["FileNames"]["BakSuffix"]
                         if fileName == "steam_api.dll" or fileName == "steam_api64.dll":
-                            if (
-                                config["Preferences"]["CrackOption"] != "0"
-                            ):  # Only create config
+                            if config["Preferences"]["CrackOption"] != "0":  # Only create config
                                 update_logs(
                                     "Ignoring "
                                     + relativeRootDir
@@ -669,12 +636,8 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                             else:
                                 newName = config["FileNames"]["SteamAPI64"]
 
-                        if (
-                            newName == ""
-                        ):  # Don't keep a backup of the steam_api(64).dll file
-                            os.remove(
-                                os.path.join(dllAbsoluteRelativeLocation, fileName)
-                            )
+                        if newName == "":  # Don't keep a backup of the steam_api(64).dll file
+                            os.remove(os.path.join(dllAbsoluteRelativeLocation, fileName))
                             update_logs(
                                 "Removed old "
                                 + relativeRootDir
@@ -693,9 +656,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                                 + fileName
                                 + " could be created, and the file has been deleted."
                             )
-                            os.remove(
-                                os.path.join(dllAbsoluteRelativeLocation, fileName)
-                            )
+                            os.remove(os.path.join(dllAbsoluteRelativeLocation, fileName))
                         else:
                             shutil.move(
                                 os.path.join(dllAbsoluteRelativeLocation, fileName),
@@ -719,9 +680,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
                     )
 
                     # Check if ends with a specific extension, so we can replace the presets inside
-                    if any(
-                        fileName.endswith(extension) for extension in EXTS_TO_REPLACE
-                    ):
+                    if any(fileName.endswith(extension) for extension in EXTS_TO_REPLACE):
                         # Read the file's content
                         with open(
                             os.path.join(dllAbsoluteRelativeLocation, fileName),
@@ -732,9 +691,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
 
                         # Replace the presets if any
                         fileContent = fileContent.replace("SAC_AppID", str(appID))
-                        fileContent = fileContent.replace(
-                            "SAC_APIVersion", apiFileVersion
-                        )
+                        fileContent = fileContent.replace("SAC_APIVersion", apiFileVersion)
                         buffer = ""
                         for i in range(len(dlcIDs)):
                             buffer += str(dlcIDs[i]) + " = " + dlcNames[i] + "\n"
@@ -783,13 +740,11 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         top.resizable(False, False)  # Prevents resizing the window's width and height
         biggerFont = DEFAULT_FONT.copy()
         biggerFont.config(size=10)
-        ttk.Label(top, text="Settings", font=FONT2).pack(
-            padx=200, pady=(10, 10), anchor="center"
-        )
+        ttk.Label(top, text="Settings", font=FONT2).pack(padx=200, pady=(10, 10), anchor="center")
 
-        ttk.Button(
-            top, text="Reset to default", padding=0, command=ResetSettingsButton
-        ).pack(pady=(0, 0), anchor="center")
+        ttk.Button(top, text="Reset to default", padding=0, command=ResetSettingsButton).pack(
+            pady=(0, 0), anchor="center"
+        )
 
         # Handle scrolling
         scrollCanvas = tk.Canvas(top, width=600, height=450, highlightthickness=0)
@@ -840,18 +795,14 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             text="Don't automatically check for updates (RECOMMENDED FOR PRIVACY)",
             variable=UpdateOption_var,
             value="0",
-            command=lambda: UpdateConfigKey(
-                "Preferences", "UpdateOption", UpdateOption_var.get()
-            ),
+            command=lambda: UpdateConfigKey("Preferences", "UpdateOption", UpdateOption_var.get()),
         ).grid(row=0, column=0, sticky="w")
         ttk.Radiobutton(
             settings_frame_updates,
             text="Automatically check for updates on SAC start (RECOMMENDED FOR CONVENIENCE)",
             variable=UpdateOption_var,
             value="1",
-            command=lambda: UpdateConfigKey(
-                "Preferences", "UpdateOption", UpdateOption_var.get()
-            ),
+            command=lambda: UpdateConfigKey("Preferences", "UpdateOption", UpdateOption_var.get()),
         ).grid(row=1, column=0, sticky="w")
 
         # Crack approach (CrackOption)
@@ -870,27 +821,21 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             text="Crack the game automatically (RECOMMENDED)",
             variable=CrackOption_var,
             value="0",
-            command=lambda: UpdateConfigKey(
-                "Preferences", "CrackOption", CrackOption_var.get()
-            ),
+            command=lambda: UpdateConfigKey("Preferences", "CrackOption", CrackOption_var.get()),
         ).grid(row=0, column=0, sticky="w")
         ttk.Radiobutton(
             settings_frame1,
             text="Only create the crack config, and put it in the same directory as steam_api(64).dll",
             variable=CrackOption_var,
             value="1",
-            command=lambda: UpdateConfigKey(
-                "Preferences", "CrackOption", CrackOption_var.get()
-            ),
+            command=lambda: UpdateConfigKey("Preferences", "CrackOption", CrackOption_var.get()),
         ).grid(row=1, column=0, sticky="w")
         ttk.Radiobutton(
             settings_frame1,
             text="Only create the crack config, and put it in the same directory as the Steam Auto Cracker tool",
             variable=CrackOption_var,
             value="2",
-            command=lambda: UpdateConfigKey(
-                "Preferences", "CrackOption", CrackOption_var.get()
-            ),
+            command=lambda: UpdateConfigKey("Preferences", "CrackOption", CrackOption_var.get()),
         ).grid(row=2, column=0, sticky="w")
 
         # Steamless (Steamless)
@@ -918,18 +863,14 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             text="Don't attempt to use Steamless",
             variable=Steamless_var,
             value="0",
-            command=lambda: UpdateConfigKey(
-                "Preferences", "Steamless", Steamless_var.get()
-            ),
+            command=lambda: UpdateConfigKey("Preferences", "Steamless", Steamless_var.get()),
         ).grid(row=0, column=0, sticky="w")
         ttk.Radiobutton(
             settings_frame2,
             text="Attempt to use Steamless (RECOMMENDED)",
             variable=Steamless_var,
             value="1",
-            command=lambda: UpdateConfigKey(
-                "Preferences", "Steamless", Steamless_var.get()
-            ),
+            command=lambda: UpdateConfigKey("Preferences", "Steamless", Steamless_var.get()),
         ).grid(row=1, column=0, sticky="w")
 
         # FileNames
@@ -948,9 +889,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         fileNamesFrame = ttk.Frame(scrollFrame)
         fileNamesFrame.pack(padx=(15, 0), pady=(0, 10), anchor="w")
 
-        tk.Label(fileNamesFrame, text="steam_api.dll backup name:").grid(
-            row=0, column=0
-        )
+        tk.Label(fileNamesFrame, text="steam_api.dll backup name:").grid(row=0, column=0)
         global SteamApi_var
         SteamApi_var = tk.StringVar()
         steamApiEntry = tk.Entry(fileNamesFrame, width=35, textvariable=SteamApi_var)
@@ -963,9 +902,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             command=lambda: UpdateFileName("SteamAPI", SteamApi_var),
         ).grid(row=0, column=2, ipadx=10)
 
-        tk.Label(fileNamesFrame, text="steam_api64.dll backup name:").grid(
-            row=1, column=0
-        )
+        tk.Label(fileNamesFrame, text="steam_api64.dll backup name:").grid(row=1, column=0)
         global SteamApi64_var
         SteamApi64_var = tk.StringVar()
         steamApiEntry = tk.Entry(fileNamesFrame, width=35, textvariable=SteamApi64_var)
@@ -991,9 +928,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             command=lambda: UpdateFileName("GameEXE", GameEXE_var),
         ).grid(row=2, column=2, ipadx=10)
 
-        tk.Label(fileNamesFrame, text="Other files backup suffix:").grid(
-            row=3, column=0
-        )
+        tk.Label(fileNamesFrame, text="Other files backup suffix:").grid(row=3, column=0)
         global BakSuffix_var
         BakSuffix_var = tk.StringVar()
         steamApiEntry = tk.Entry(fileNamesFrame, width=35, textvariable=BakSuffix_var)
@@ -1055,9 +990,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             scrollFrame,
             text="Bypass the game verification, allows to crack AppIDs not recognized as games",
             variable=BypassGameVerification_var,
-            command=lambda: UpdateAdvanced(
-                "BypassGameVerification", BypassGameVerification_var
-            ),
+            command=lambda: UpdateAdvanced("BypassGameVerification", BypassGameVerification_var),
         )
         advBypassGameVerification.pack(padx=(15, 0), pady=(0, 10), anchor="w")
 
@@ -1110,13 +1043,11 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         ],
     }
 
-    crackListSteamless = (
-        {  # Whether to use Steamless with a specific crack. True = use Steamless
-            "game_ali213": True,
-            "game_goldberg": True,
-            "dlc_creamapi": False,
-        }
-    )
+    crackListSteamless = {  # Whether to use Steamless with a specific crack. True = use Steamless
+        "game_ali213": True,
+        "game_goldberg": True,
+        "dlc_creamapi": False,
+    }
 
     def DisplayCrackList():
         top = tk.Toplevel(root)
@@ -1124,13 +1055,11 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         top.resizable(False, False)  # Prevents resizing the window's width and height
         biggerFont = DEFAULT_FONT.copy()
         biggerFont.config(size=10)
-        ttk.Label(top, text="Crack List", font=FONT2).pack(
-            padx=200, pady=(10, 10), anchor="center"
-        )
+        ttk.Label(top, text="Crack List", font=FONT2).pack(padx=200, pady=(10, 10), anchor="center")
 
-        ttk.Button(
-            top, text="Reset to default", padding=0, command=ResetCrackListButton
-        ).pack(pady=(0, 0), anchor="center")
+        ttk.Button(top, text="Reset to default", padding=0, command=ResetCrackListButton).pack(
+            pady=(0, 0), anchor="center"
+        )
 
         # Selected crack (SelectedCrack)
         ttk.Label(top, text="Selected crack:", font=FONT3, padding=0).pack(
@@ -1260,9 +1189,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
             # Check if the config is complete. If not, complete it.
             changed = FillConfig(config, configDefault)
             if changed:
-                print(
-                    "[SAC] config.ini has been updated, missing entries have been created"
-                )
+                print("[SAC] config.ini has been updated, missing entries have been created")
                 UpdateConfig()
 
     ReloadConfig()
@@ -1277,9 +1204,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         data = req.json()
         global latestversion
         latestversion = data["version"]
-        if (
-            latestversion == VERSION
-        ):  # The latest stable version is the one we're running
+        if latestversion == VERSION:  # The latest stable version is the one we're running
             updatesButton.config(text="SAC is up to date!", state=tk.NORMAL)
             return
 
@@ -1296,21 +1221,19 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         top.resizable(False, False)  # Prevents resizing the window's width and height
         biggerFont = DEFAULT_FONT.copy()
         biggerFont.config(size=10)
-        ttk.Label(top, text="Update", font=FONT2).pack(
-            padx=200, pady=(10, 10), anchor="center"
-        )
+        ttk.Label(top, text="Update", font=FONT2).pack(padx=200, pady=(10, 10), anchor="center")
         ttk.Label(
             top,
             text="A new update for Steam Auto Cracker GUI is available.\nDo you want to download it automatically?",
             font=biggerFont,
             padding=0,
         ).pack(padx=(6, 0), pady=(10, 0), anchor="w")
-        ttk.Label(
-            top, text=f"Current version: {VERSION}", font=biggerFont, padding=0
-        ).pack(padx=(6, 0), pady=(15, 0), anchor="w")
-        ttk.Label(
-            top, text=f"Latest version: {latestversion}", font=biggerFont, padding=0
-        ).pack(padx=(6, 0), pady=(0, 10), anchor="w")
+        ttk.Label(top, text=f"Current version: {VERSION}", font=biggerFont, padding=0).pack(
+            padx=(6, 0), pady=(15, 0), anchor="w"
+        )
+        ttk.Label(top, text=f"Latest version: {latestversion}", font=biggerFont, padding=0).pack(
+            padx=(6, 0), pady=(0, 10), anchor="w"
+        )
 
         updateDisplayButtonsFrame = ttk.Frame(top)
         updateDisplayButtonsFrame.pack(pady=(5, 20))
@@ -1385,15 +1308,11 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         with open("steam_auto_cracker_gui_autoupdater.exe", mode="wb") as file:
             file.write(req.content)
 
-        updateDisplayStatusLabel.config(
-            text="Autoupdater installed!\nStarting it in 3 seconds..."
-        )
+        updateDisplayStatusLabel.config(text="Autoupdater installed!\nStarting it in 3 seconds...")
         root.update()
 
         sleep(3)
-        subprocess.Popen(
-            "steam_auto_cracker_gui_autoupdater.exe"
-        )  # Open SAC GUI Autoupdater
+        subprocess.Popen("steam_auto_cracker_gui_autoupdater.exe")  # Open SAC GUI Autoupdater
         exit()
 
     def CopyReleaseURL():
@@ -1427,9 +1346,9 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
     style.configure("TButton", padding=10)
     style.configure("TText", padding=6)
 
-    ttk.Label(
-        root, text=f"SteamAutoCracker GUI v{VERSION}", font=FONT2, padding=0
-    ).pack(pady=(10, 0), anchor="center")
+    ttk.Label(root, text=f"SteamAutoCracker GUI v{VERSION}", font=FONT2, padding=0).pack(
+        pady=(10, 0), anchor="center"
+    )
     ttk.Label(root, text="by BigBoiCJ", padding=0).pack(pady=(0, 0), anchor="center")
 
     updatesFrame = tk.Frame(root)
@@ -1482,9 +1401,9 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
     )  # The elements will be inside this one. This is so we can call pack_forget and still preserve the location of frameGame.
     frameGame2.pack()
     ttk.Separator(frameGame2, orient="horizontal").pack(fill="x", padx=50, pady=(15, 0))
-    ttk.Label(
-        frameGame2, text="Enter the Name or AppID of the game you want to Crack:"
-    ).pack(pady=(15, 0), anchor="center")
+    ttk.Label(frameGame2, text="Enter the Name or AppID of the game you want to Crack:").pack(
+        pady=(15, 0), anchor="center"
+    )
 
     frame4 = ttk.Frame(frameGame2)
     frame4.pack(pady=(5, 0), anchor="center")
@@ -1516,9 +1435,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
     )
     selectCrackButton.grid(row=0, column=1, padx=(10, 0))
     UpdateSelectedCrackDisplay()  # Updates the text of selectCrackButton
-    crackGameButton = ttk.Button(
-        frameCrack2, text="Crack the game", padding=8, command=CrackGame
-    )
+    crackGameButton = ttk.Button(frameCrack2, text="Crack the game", padding=8, command=CrackGame)
     crackGameButton.pack(pady=(10, 0))
 
     frameCrack2.pack_forget()  # Hide the elements, but preserves their location thanks to frameCrack still being packed but empty
@@ -1536,9 +1453,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
         buf += "-"
 
     logs_text.insert("1.0", f"{buf}\n{text}\n{buf}")
-    logs_text.config(
-        state=tk.DISABLED
-    )  # Prevents users from editing the text inside logs_text
+    logs_text.config(state=tk.DISABLED)  # Prevents users from editing the text inside logs_text
 
     # Handle errors to log them while tkinter is running
     root.report_callback_exception = OnTkinterError
@@ -1559,9 +1474,7 @@ try:  # Handles Python errors to write them to a log file so they can be reporte
 
 except Exception:
     # Handle Python errors
-    print(
-        "\n[!!!] A Python error occurred! Writing the error to the error.log file.\n---"
-    )
+    print("\n[!!!] A Python error occurred! Writing the error to the error.log file.\n---")
     with open("error.log", "w", encoding="utf-8") as errorFile:
         errorFile.write(
             f"SteamAutoCracker GUI v{VERSION}\n---\nA Python error occurred!\nPlease report it on GitHub or cs.rin.ru\nMake sure to blank any personal detail.\n---\n\n"

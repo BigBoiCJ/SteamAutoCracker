@@ -24,7 +24,6 @@ try: # Handles Python errors to write them to a log file so they can be reported
     HIGH_DLC_WARNING = 125
 
     folder_path = ""
-    last_dropped_folder = ""
     appID = 0
     gameSearchDone = False
 
@@ -75,6 +74,13 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
     def handle_folder_selection(folder_path=None, event=None):
         global last_dropped_folder
+        last_dropped_folder = config["Preferences"].get("last_dropped_folder", "")
+        # Reset and hide UI elements related to folder selection and game cracking
+        def reset_folder_selection_ui():
+            selectedFolderLabel.config(text="")
+            selectedFolderLabel.pack_forget()
+            frameGame2.pack_forget()
+            frameCrack2.pack_forget()
 
         # Determine the folder path based on the event type
         if event:  # Handling drag and drop
@@ -86,6 +92,8 @@ try: # Handles Python errors to write them to a log file so they can be reported
         if os.path.isdir(folder_path):
             # Update the last dropped folder for future use
             last_dropped_folder = folder_path
+            config["Preferences"]["last_dropped_folder"] = folder_path
+            UpdateConfig()
             folder_name = os.path.basename(folder_path)
 
             # Update UI elements with the selected folder information
@@ -104,13 +112,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         else:
             # Handle invalid folder selection
             update_logs("\nNo valid folder selected")
-            reset_ui()
-
-    def reset_ui():
-        selectedFolderLabel.config(text="")
-        selectedFolderLabel.pack_forget()
-        frameGame2.pack_forget()
-        frameCrack2.pack_forget()
+            reset_folder_selection_ui()
 
     def update_logs(log_message):
         # Get current content
@@ -810,6 +812,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
             currentConfig["Preferences"]["UpdateOption"] = "0"
             currentConfig["Preferences"]["CrackOption"] = "0"
             currentConfig["Preferences"]["Steamless"] = "1"
+            currentConfig["Preferences"]["last_dropped_folder"] = ""
 
             currentConfig["FileNames"] = {}
             currentConfig["FileNames"]["GameEXE"] = ".bak"

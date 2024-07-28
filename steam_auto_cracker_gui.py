@@ -80,7 +80,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
             selectedFolderLabel.config(text="")
             selectedFolderLabel.pack_forget()
             frameGame2.pack_forget()
-            frameCrack2.pack_forget()
+            frameCrack2.pack_forget() # Hide the crack frame
 
         # Determine the folder path based on the event type
         if event:  # Handling drag and drop
@@ -94,7 +94,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
             last_dropped_folder = folder_path
             config["Preferences"]["last_dropped_folder"] = folder_path
             UpdateConfig()
-            folder_name = os.path.basename(folder_path)
+            folder_name = os.path.basename(folder_path) # Gets the name of the folder ("C:/Something/Games/Hello" will return "Hello")
 
             # Update UI elements with the selected folder information
             update_logs(f"\nSelected folder: {folder_path}")
@@ -103,8 +103,8 @@ try: # Handles Python errors to write them to a log file so they can be reported
             frameGame2.pack()
 
             # Update the game name entry with the folder name
-            gameNameEntry.delete(0, tk.END)
-            gameNameEntry.insert(0, folder_name)
+            gameNameEntry.delete(0, tk.END) # Removes the content of the Entry element starting from index 0 to the end
+            gameNameEntry.insert(0, folder_name) # Inserts the name of the folder in the Entry element at the start of it (index 0)
 
             # Show crack frame if game search is done
             if gameSearchDone:

@@ -2,7 +2,6 @@ import traceback
 
 try: # Handles Python errors to write them to a log file so they can be reported and fixed more easily.
     import tkinter as tk
-    import tkinter.tix as tix
     from tkinter import ttk, filedialog, font
     from tkinterdnd2 import DND_FILES, TkinterDnD
 

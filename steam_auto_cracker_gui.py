@@ -16,7 +16,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     from time import sleep
     from sys import exit
 
-    VERSION = "2.1.0"
+    VERSION = "2.2.0"
 
     RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
     RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
@@ -73,8 +73,8 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 self.req = req
 
     def handle_folder_selection(folder_path=None, event=None):
-        global last_dropped_folder
-        last_dropped_folder = config["Preferences"].get("last_dropped_folder", "")
+        global last_selected_folder
+        last_selected_folder = config["Preferences"].get("last_selected_folder", "")
         # Reset and hide UI elements related to folder selection and game cracking
         def reset_folder_selection_ui():
             selectedFolderLabel.config(text="")
@@ -84,15 +84,17 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
         # Determine the folder path based on the event type
         if event:  # Handling drag and drop
-            folder_path = event.data.strip("{}").replace("\\", "/")
+            folder_path = event.data.strip("{}").replace("\\", "/") # Returns the directory with no "/" at the end
         elif not folder_path:  # Handling button click
-            initial_dir = last_dropped_folder or "/"
-            folder_path = filedialog.askdirectory(initialdir=initial_dir)
+            initial_dir = "/"
+            if last_selected_folder != "" and os.path.isdir(last_selected_folder):
+                initial_dir = last_selected_folder
+            folder_path = filedialog.askdirectory(initialdir=initial_dir) # Returns the directory with no "/" at the end
 
         if os.path.isdir(folder_path):
             # Update the last dropped folder for future use
-            last_dropped_folder = folder_path
-            config["Preferences"]["last_dropped_folder"] = folder_path
+            last_selected_folder = os.path.dirname(folder_path) # If no "/" at the end, returns the parent directory
+            config["Preferences"]["last_selected_folder"] = last_selected_folder
             UpdateConfig()
             folder_name = os.path.basename(folder_path) # Gets the name of the folder ("C:/Something/Games/Hello" will return "Hello")
 
@@ -812,7 +814,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
             currentConfig["Preferences"]["UpdateOption"] = "0"
             currentConfig["Preferences"]["CrackOption"] = "0"
             currentConfig["Preferences"]["Steamless"] = "1"
-            currentConfig["Preferences"]["last_dropped_folder"] = ""
+            currentConfig["Preferences"]["last_selected_folder"] = ""
 
             currentConfig["FileNames"] = {}
             currentConfig["FileNames"]["GameEXE"] = ".bak"

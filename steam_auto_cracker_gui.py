@@ -608,7 +608,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         CrackOption_var.set(config["Preferences"]["CrackOption"])
         ttk.Radiobutton(settings_frame1, text="Crack the game automatically (RECOMMENDED)", variable=CrackOption_var, value="0", command=lambda: UpdateConfigKey("Preferences", "CrackOption", CrackOption_var.get())).grid(row=0, column=0, sticky="w")
         ttk.Radiobutton(settings_frame1, text="Only create the crack config, and put it in the same directory as steam_api(64).dll", variable=CrackOption_var, value="1", command=lambda: UpdateConfigKey("Preferences", "CrackOption", CrackOption_var.get())).grid(row=1, column=0, sticky="w")
-        ttk.Radiobutton(settings_frame1, text="Only create the crack config, and put it in the same directory as the Steam Auto Cracker tool", variable=CrackOption_var, value="2", command=lambda: UpdateConfigKey("Preferences", "CrackOption", CrackOption_var.get())).grid(row=2, column=0, sticky="w")
+        ttk.Radiobutton(settings_frame1, text="Only create the crack config, and put it in the same directory as the Steam Auto Cracker tool\n(currently bugged, doesn't work!)", variable=CrackOption_var, value="2", command=lambda: UpdateConfigKey("Preferences", "CrackOption", CrackOption_var.get())).grid(row=2, column=0, sticky="w")
 
         # Steamless (Steamless)
         ttk.Label(scrollFrame, text="Steamless:", font=FONT3, padding=0).pack(padx=(6, 0), pady=(10,0), anchor="w")

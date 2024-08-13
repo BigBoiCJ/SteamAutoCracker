@@ -5,10 +5,10 @@
 Scripts and files to help you 'compile'/bundle SteamAutoCracker into an .exe by yourself
 
 ## Requirements
-- An internet connection (if you haven't installed the `pyinstaller`, `requests` and `pywin32` modules)
+- An internet connection (if you haven't installed the `pyinstaller`, `requests`, `tkinterdnd2` and `pywin32` modules)
 - 64 bits Windows
 - The `pyinstaller` module. Run `py -m pip install pyinstaller` or check the compile instructions for more details.
-- The `requests` and `pywin32` module. Just run `create venv.bat` to create a virtual environment and install those modules on it, but I'll explain this later.
+- The `requests`, `tkinterdnd2` and `pywin32` module. Just run `create venv.bat` to create a virtual environment and install those modules on it, but I'll explain this later.
 - Python 3.7+ is needed. I'm personally running 3.9, so this version is guaranteed to work.
 
 ## Compile instructions for Windows and pyinstaller

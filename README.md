@@ -49,6 +49,7 @@ Screenshots from v2.0.0
   - The `pywin32` module (which contains win32api). Install with `py -m pip install pywin32` or `python -m pip install pywin32` or `python3 -m pip install pywin32`
     - If you have any problem, please check https://pypi.org/project/pywin32/
   - The `tkinter` module, but it should be included in Python by default.
+  - As of v2.2.0 GUI, the `tkinterdnd2` module is required as well (v0.4.0+). Install it with `py -m pip install tkinterdnd2`. ([pypi link](https://pypi.org/project/tkinterdnd2/) - [github link](https://github.com/Eliav2/tkinterdnd2))
   - I believe Python 3.7+ is needed.
 
 ## Notes about DLCs

@@ -15,7 +15,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     from time import sleep
     from sys import exit
 
-    VERSION = "2.2.1"
+    VERSION = "2.2.2"
 
     RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
     RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
@@ -115,6 +115,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         else:
             # Handle invalid folder selection
             update_logs("\nNo valid folder selected")
+            folder_path = ""
             reset_folder_selection_ui()
 
     def update_logs(log_message):

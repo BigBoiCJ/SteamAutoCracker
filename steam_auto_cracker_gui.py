@@ -1,9 +1,14 @@
 import traceback
 
 try: # Handles Python errors to write them to a log file so they can be reported and fixed more easily.
-    import tkinter as tk
+    ## Replaced by 'ttkbootstrap' for [easier] themes
+    #import tkinter as tk
     from tkinter import ttk, filedialog, font
     from tkinterdnd2 import DND_FILES, TkinterDnD
+
+    ## Used for theming/coloring configuration for the UI
+    import ttkbootstrap
+    import ttkbootstrap as tk
 
     import requests
     import configparser
@@ -14,6 +19,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     import shutil
     from time import sleep
     from sys import exit
+    import typing
 
     VERSION = "2.2.2"
 
@@ -31,8 +37,13 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
     EXTS_TO_REPLACE = (".txt", ".ini", ".cfg")
 
-    GITHUB_LATESTVERSIONJSON = "https://raw.githubusercontent.com/BigBoiCJ/SteamAutoCracker/autoupdater/latestversion.json"
-    GITHUB_AUTOUPDATER = "https://raw.githubusercontent.com/BigBoiCJ/SteamAutoCracker/autoupdater/steam_auto_cracker_gui_autoupdater.exe"
+    GITHUB_RAWHOST = "raw.githubusercontent.com"
+    GITHUB_APIHOST = "api.github.com"
+    GITHUB_ACCREPOSTR = "BigBoiCJ/SteamAutoCracker"
+    GITHUB_ALLRELEASESJSON = f"https://{GITHUB_APIHOST}/repos/{GITHUB_ACCREPOSTR}/releases"
+    GITHUB_LATESTRELEASESJSON = f"{GITHUB_ALLRELEASESJSON}/latest"
+    GITHUB_LATESTVERSIONJSON = f"https://{GITHUB_RAWHOST}/{GITHUB_ACCREPOSTR}/autoupdater/latestversion.json"
+    GITHUB_AUTOUPDATER = f"https://{GITHUB_RAWHOST}/{GITHUB_ACCREPOSTR}/autoupdater/steam_auto_cracker_gui_autoupdater.exe"
 
     def OnTkinterError(exc, val, tb):
         # Handle Tkinter Python errors
@@ -551,6 +562,30 @@ try: # Handles Python errors to write them to a log file so they can be reported
         selectCrackButton.config(state=tk.NORMAL)
         crackGameButton.config(state=tk.NORMAL)
 
+
+    # Theming
+    AllThemes: dict[str, dict[str, typing.Any]] = ttkbootstrap.themes.standard.STANDARD_THEMES
+    ThemeFilter = ('cosmo', 'darkly', 'cyborg')
+    ThemeAliases = ('light', 'dark', 'black')
+    ThemesSubset = dict([t for t in AllThemes.items() if t[0] in ThemeFilter])
+    def GetThemes() -> dict[str, dict[str, typing.Any]]:
+        return ThemesSubset
+    
+    # Changes appearance according to the theme in the config
+    def ApplyStyle() -> None:
+        global style
+        
+        if (config["Preferences"]["ThemeOption"] in tuple(GetThemes().keys())):
+            ##print(config["Preferences"]["ThemeOption"])
+            style.theme_use(config["Preferences"]["ThemeOption"])
+            
+            style.configure("TFrame", padding=0)
+            style.configure("TLabel", padding=6)
+            style.configure("TRadiobutton", padding=6)
+            style.configure("TButton", padding=10)
+            style.configure("TEntry", padding=6)
+            style.configure("TEntry", padding=0)
+
     # ----- Settings -----
 
     def SettingsButton():
@@ -587,6 +622,27 @@ try: # Handles Python errors to write them to a log file so they can be reported
         scrollFrame.bind("<Configure>", configure_canvas)
         # Finished handling scrolling
 
+        # Theme options (ThemeOption)
+        ttk.Label(scrollFrame, text="Theme:", font=FONT3, padding=0).pack(padx=(6, 0), pady=(10,0), anchor="w")
+        settings_frame_theme = ttk.Frame(scrollFrame)
+        settings_frame_theme.pack(padx=(15, 0), pady=(0, 0), anchor="w")
+
+        # Radios
+        global ThemeOption_var
+        ThemeOption_var = tk.StringVar()
+        ThemeOption_var.set(config["Preferences"]["ThemeOption"])
+
+        # Display subset of themes that correspond to the
+        # typical 'light', 'dark', and 'black' theme options
+        themeRow = 0
+        for themeIdx, themeKey in enumerate(tuple(GetThemes().keys())):
+            ttk.Radiobutton(
+                settings_frame_theme, text=f"{themeKey} ({ThemeAliases[themeIdx]})", variable=ThemeOption_var,
+                value=themeKey, command=lambda: UpdateConfAndUI("Preferences", "ThemeOption", ThemeOption_var.get())
+            ).grid(padx=(4, 4), pady=(2,2), row=themeRow, column=0, sticky="w")
+            ##print(f"{themeRow} {themeCol}")
+            themeRow += 1
+        
         # Update options (UpdateOption)
         ttk.Label(scrollFrame, text="Updates:", font=FONT3, padding=0).pack(padx=(6, 0), pady=(10,0), anchor="w")
         ttk.Label(scrollFrame, text="This will search the latest version on GitHub.\nIf you're afraid of leaking your IP to GitHub, use a VPN and/or disable auto updating.", font=FONT4, padding=0, foreground="#575757", wraplength=600).pack(padx=(6, 0), pady=(0,0), anchor="w")
@@ -695,6 +751,10 @@ try: # Handles Python errors to write them to a log file so they can be reported
         advBypassGameVerification = ttk.Checkbutton(scrollFrame, text="Bypass the game verification, allows to crack AppIDs not recognized as games", variable=BypassGameVerification_var, command=lambda: UpdateAdvanced("BypassGameVerification", BypassGameVerification_var))
         advBypassGameVerification.pack(padx=(15, 0), pady=(0, 10), anchor="w")
 
+        # Place at same pos as root window, with the same size
+        # instead of default position (which sometimes is on the other monitor)
+        top.geometry(f"{root.winfo_width()}x{root.winfo_height()}+{root.winfo_x()}+{root.winfo_y()}")
+
         top.grab_set() # Catches all interactions, prevents the user from interacting with the root window
 
     def UpdateFileName(key, strVar):
@@ -796,6 +856,11 @@ try: # Handles Python errors to write them to a log file so they can be reported
         with open("config.ini", "w", encoding="utf-8") as configFile:
             config.write(configFile)
 
+    def UpdateConfAndUI(section: str, key: str, value: str):
+        UpdateConfigKey(section, key, value)
+        # Reapply with new selection
+        ApplyStyle()
+
     def UpdateConfigKey(section: str, key: str, value: str):
         config[section][key] = value
         UpdateConfig()
@@ -813,6 +878,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
         if resetLevel == 0 or resetLevel == 1:
             currentConfig["Preferences"] = {}
+            currentConfig["Preferences"]["ThemeOption"] = list(GetThemes().keys())[0]
             currentConfig["Preferences"]["UpdateOption"] = "0"
             currentConfig["Preferences"]["CrackOption"] = "0"
             currentConfig["Preferences"]["Steamless"] = "1"
@@ -989,12 +1055,9 @@ try: # Handles Python errors to write them to a log file so they can be reported
     FONT_APP_ENTRY.config(size=10)
 
     # Style ttk
-    style = ttk.Style()
-    style.configure("TFrame", padding=0)
-    style.configure("TLabel", padding=6)
-    style.configure("TRadiobutton", padding=6)
-    style.configure("TButton", padding=10)
-    style.configure("TText", padding=6)
+    style: ttkbootstrap.Style = ttkbootstrap.Style(theme=config["Preferences"]["ThemeOption"])
+    
+    ApplyStyle()
 
     ttk.Label(root, text=f"SteamAutoCracker GUI v{VERSION}", font=FONT2, padding=0).pack(pady=(10, 0), anchor="center")
     ttk.Label(root, text="by BigBoiCJ", padding=0).pack(pady=(0, 0), anchor="center")
@@ -1069,7 +1132,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
     #tk.Label(root, text="").pack()
 
     # Logs scroll text widget
-    logs_text = tk.Text(root, height=15, width=100)
+    logs_text = tk.Text(root, height=15, width=100, font='TkFixedFont')
     logs_text.pack(pady=10, padx=10)
 
     text = f"SteamAutoCracker GUI v{VERSION} by BigBoiCJ"
@@ -1093,6 +1156,8 @@ try: # Handles Python errors to write them to a log file so they can be reported
     # Check for updates
     if config["Preferences"]["UpdateOption"] == "1":
         CheckUpdates()
+
+    ##root.geometry("636x555")
 
     # Start main loop
     root.mainloop()

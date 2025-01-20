@@ -1,3 +1,4 @@
 requests
 pywin32
 tkinterdnd2
+ttkbootstrap == 0.5.3

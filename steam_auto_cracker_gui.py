@@ -91,6 +91,11 @@ try: # Handles Python errors to write them to a log file so they can be reported
                 initial_dir = last_selected_folder
             folder_path_temp = filedialog.askdirectory(initialdir=initial_dir) # Returns the directory with no "/" at the end
 
+            # Fix to work on Linux: Tkinter: tuple → string
+            if isinstance(folder_path_temp, tuple):
+                folder_path_temp = folder_path_temp[0]
+
+
         if os.path.isdir(folder_path_temp):
             folder_path = folder_path_temp
             # Update the last dropped folder for future use

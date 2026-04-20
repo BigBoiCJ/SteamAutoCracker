@@ -1,3 +1,4 @@
 requests
 pywin32
 tkinterdnd2
+auto-py-to-exe

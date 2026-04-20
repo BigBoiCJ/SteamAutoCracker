@@ -1,3 +1,4 @@
+import ctypes
 import traceback
 
 try: # Handles Python errors to write them to a log file so they can be reported and fixed more easily.
@@ -7,6 +8,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
     import requests
     import configparser
+    import ast
     import json
     import os
     import subprocess
@@ -14,8 +16,10 @@ try: # Handles Python errors to write them to a log file so they can be reported
     import shutil
     from time import sleep
     from sys import exit
+    import re
+    import unicodedata
 
-    VERSION = "2.2.2"
+    VERSION = "2.2.7-rc1"
 
     RETRY_DELAY = 15 # Delay in seconds before retrying a failed request. (default, can be modified in config.ini)
     RETRY_MAX = 30 # Number of failed tries (includes the first try) after which SAC will stop trying and quit. (default, can be modified in config.ini)
@@ -31,8 +35,13 @@ try: # Handles Python errors to write them to a log file so they can be reported
 
     EXTS_TO_REPLACE = (".txt", ".ini", ".cfg")
 
-    GITHUB_LATESTVERSIONJSON = "https://raw.githubusercontent.com/BigBoiCJ/SteamAutoCracker/autoupdater/latestversion.json"
-    GITHUB_AUTOUPDATER = "https://raw.githubusercontent.com/BigBoiCJ/SteamAutoCracker/autoupdater/steam_auto_cracker_gui_autoupdater.exe"
+    GITHUB_LATESTVERSIONJSON = "https://raw.githubusercontent.com/SquashyHydra/SteamAutoCracker/autoupdater/latestversion.json"
+    GITHUB_AUTOUPDATER = "https://github.com/SquashyHydra/SteamAutoCracker/raw/refs/heads/autoupdater/steam_auto_cracker_gui_autoupdater.exe"
+
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+    except AttributeError:
+        ctypes.windll.user32.SetProcessDPIAware(True)
 
     def OnTkinterError(exc, val, tb):
         # Handle Tkinter Python errors
@@ -152,14 +161,24 @@ try: # Handles Python errors to write them to a log file so they can be reported
         appID = 0
         if gameNameEntry.get() == "":
             update_logs("\n[!] Please enter a valid Name or AppID")
+            gameNameEntry.delete(0, tk.END)
+            gameNameEntry.insert(0, "AppID")
             searchGameButton.config(state=tk.NORMAL)  # Re-enable the ability to search the game
             selectFolderButton.config(state=tk.NORMAL) # Re-enable the ability to change the selected folder
             return
-
-        try:
+        
+        if gameNameEntry.get().isdigit():
             appID = int(gameNameEntry.get())
-        except:
+        else:
             appID = FindInAppList(gameNameEntry.get())
+
+        if not str(appID).isdigit():
+            update_logs("\n[!] Please enter a AppID")
+            gameNameEntry.delete(0, tk.END)
+            gameNameEntry.insert(0, "AppID")
+            searchGameButton.config(state=tk.NORMAL)  # Re-enable the ability to search the game
+            selectFolderButton.config(state=tk.NORMAL) # Re-enable the ability to change the selected folder
+            return
 
         if appID != 0 and RetrieveGame(): # On success
             # We are now on step 3
@@ -177,17 +196,133 @@ try: # Handles Python errors to write them to a log file so they can be reported
         root.update() # Update the window now
         try:
             with open("applist.txt", "r", encoding="utf-8") as file:
-                data = json.load(file)
+                data = json.loads(json.dumps(ast.literal_eval(file.read())))
         except:
             update_logs("The App List isn't downloaded on your computer, downloading it...")
             UpdateAppList()
-            return FindInAppList(appName) # Re launch this funtion
+            return FindInAppList(appName)
 
-        for elem in data["applist"]["apps"]:
-            if elem["name"].lower() != appName.lower():
+        # Helper normalizers: keep-space and nospace versions, plus roman numeral handling
+        def _normalize_keep_space(s: str) -> str:
+            s = (s or "")
+            s = unicodedata.normalize('NFKD', s)
+            s = ''.join(c for c in s if not unicodedata.combining(c))
+            s = s.lower()
+            # remove characters except a-z, 0-9 and spaces
+            s = re.sub(r'[^a-z0-9 ]+', '', s)
+            s = re.sub(r'\s+', ' ', s).strip()
+            return s
+
+        def _normalize_nospace(s: str) -> str:
+            return re.sub(r'[^a-z0-9]', '', _normalize_keep_space(s))
+
+        def _roman_to_int(s: str):
+            s = s.strip().upper()
+            if not re.fullmatch(r"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", s):
+                return None
+
+            vals = {"M":1000, "CM":900, "D":500, "CD":400, "C":100, "XC":90, "L":50, "XL":40, "X":10, "IX":9, "V":5, "IV":4, "I":1}
+            i = 0
+            total = 0
+            while i < len(s):
+                if i+1 < len(s) and s[i:i+2] in vals:
+                    total += vals[s[i:i+2]]; i += 2
+                else:
+                    total += vals[s[i]]; i += 1
+            return total
+
+        def _int_to_roman(num: int):
+            if not isinstance(num, int) or isinstance(num, bool):
+                return None
+            if not (1 <= num <= 3999):
+                return None
+            vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1]
+            syms = ["M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I"]
+            res = ""
+            i = 0
+            while num > 0:
+                for _ in range(num // vals[i]):
+                    res += syms[i]
+                    num -= vals[i]
+                i += 1
+            return res
+
+        def _replace_roman_with_digits(text: str) -> str:
+            def _sub(m):
+                val = _roman_to_int(m.group(0))
+                return str(val) if val is not None else m.group(0)
+            return re.sub(r'\b[MDCLXVI]+\b', _sub, text, flags=re.IGNORECASE)
+
+        def _replace_digits_with_roman(text: str) -> str:
+            def _sub(m):
+                try:
+                    num = int(m.group(0))
+                except Exception:
+                    return m.group(0)
+                r = _int_to_roman(num)
+                return r if r is not None else m.group(0)
+            return re.sub(r'\b\d+\b', _sub, text)
+
+        def _variants(s: str):
+            s = s or ""
+            v = set()
+            originals = [s, _replace_roman_with_digits(s), _replace_digits_with_roman(s)]
+            for o in originals:
+                keep = _normalize_keep_space(o)
+                nosp = _normalize_nospace(o)
+                v.add(keep)
+                v.add(nosp)
+            return v
+
+        if isinstance(appName, type(None)):
+            update_logs("[!] The App was not found, make sure you entered EXACTLY the Steam Game's name (watch it on Steam)")
+            gameFoundStatus.config(text=f"App not found!")
+            updateAppListButton.grid(row=0, column=2, padx=(10, 0))
+            return 0
+
+        target_variants = _variants(appName)
+        try:
+            appName_lower = appName.lower()
+        except Exception:
+            update_logs("[!] The App was not found, make sure you entered EXACTLY the Steam Game's name (watch it on Steam)")
+            gameFoundStatus.config(text=f"App not found!")
+            updateAppListButton.grid(row=0, column=2, padx=(10, 0))
+            return 0
+
+        for app in data:
+            appNameInList = app.get("name", "")
+            appName2InList = app.get("name2", "")
+
+            if isinstance(appNameInList, type(None)):
+                appNameInList = ""
+            if isinstance(appName2InList, type(None)):
+                appName2InList = ""
+
+            try: 
+                appNameInList_lower = appNameInList.lower()
+            except Exception:
+                update_logs(f"[!] Error while processing appName '{appNameInList}'")
+            
+            try:
+                appName2InList_lower = appName2InList.lower()
+            except Exception:
+                update_logs(f"[!] Error while processing appName2 '{appName2InList}'")
+
+            if appNameInList_lower == appName_lower:
+                return app["appid"]
+            elif appName2InList_lower == appName_lower:
+                return app["appid"]
+
+            try:
+                name_variants = _variants(appNameInList)
+                name2_variants = _variants(appName2InList)
+
+                # Check intersection between variant sets
+                if target_variants & name_variants or target_variants & name2_variants:
+                    return app["appid"]
+            except Exception:
+                update_logs(f"[!] Error while processing app '{appNameInList}'")
                 continue
-
-            return elem["appid"]
 
         update_logs("[!] The App was not found, make sure you entered EXACTLY the Steam Game's name (watch it on Steam)")
         update_logs("If you typed it properly, you can try to update the App List. Alternatively, you can try entering the AppID.")
@@ -202,7 +337,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         gameFoundStatus.config(text=f"Updating the App List...")
         root.update()
         try:
-            req = SACRequest("https://api.steampowered.com/ISteamApps/GetAppList/v2/", "UpdateAppList").req
+            req = SACRequest("https://raw.githubusercontent.com/SquashyHydra/SteamAutoCracker/refs/heads/applist/applist.txt", "UpdateAppList").req
         except Exception:
             gameFoundStatus.config(text=f"An error has occurred")
             return
@@ -212,7 +347,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         update_logs("App List updated!")
         gameFoundStatus.config(text=f"App List updated!")
 
-    def RetrieveAppName(appID: int) -> str:
+    def RetrieveAppName(appID: int) -> str: 
         try:
             req = SACRequest("https://store.steampowered.com/api/appdetails?appids=" + str(appID) + "&filters=basic", "RetrieveAppName").req
         except Exception:
@@ -388,7 +523,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
         root.update()
 
         dllLocations = []
-        for root_dir, dirs, files in os.walk(folder_path):
+        for root_dir, __, files in os.walk(folder_path):
             apiFile = ""
 
             # Use Steamless if configured
@@ -429,10 +564,20 @@ try: # Handles Python errors to write them to a log file so they can be reported
                     update_logs("[!] Seems like a file named " + config["FileNames"]["SteamAPI"] + " is present. This could indicate that steam_api.dll has already been cracked! Overwriting steam_api.dll. No backup of the previous steam_api.dll could be created, and the file has been deleted. " + config["FileNames"]["SteamAPI"] + " has been restored.")
                     os.remove(root_dir + "/steam_api.dll")
                     shutil.move(root_dir + "/" + config["FileNames"]["SteamAPI"], root_dir + "/steam_api.dll")
+                    if 'game_rune' in config["Crack"]["SelectedCrack"]:
+                        if os.path.exists(root_dir + "/rune.dll"):
+                            os.remove(root_dir + "/steam_api.rde") if os.path.exists(root_dir + "/steam_api.rde") else None
+                            os.remove(root_dir + "/rune.dll") if os.path.exists(root_dir + "/rune.dll") else None
+                            os.remove(root_dir + "/steam_emu.ini") if os.path.exists(root_dir + "/steam_emu.ini") else None
+                            os.remove(root_dir + "/GameOverlayRenderer.dll") if os.path.exists(root_dir + "/GameOverlayRenderer.dll") else None
+                            os.remove(root_dir + "/steamclient.dll") if os.path.exists(root_dir + "/steamclient.dll") else None
 
                 apiFile = root_dir + "/steam_api.dll"
+                runeFile = root_dir + "/steam_api.rde"
                 try:
                     apiFileVersion = GetFileVersion(apiFile)
+                    if os.path.exists(runeFile):
+                        raise Exception("Game already cracked with RUNE")
                 except Exception:
                     update_logs("[!] steam_api.dll: could not retrieve the file version! Seems like the steam_api.dll file has already been cracked! Aborting...")
                     EndCrack()
@@ -445,10 +590,19 @@ try: # Handles Python errors to write them to a log file so they can be reported
                     update_logs("[!] Seems like a file named " + config["FileNames"]["SteamAPI64"] + " is present. This could indicate that steam_api64.dll has already been cracked! Overwriting steam_api64.dll. No backup of the previous steam_api64.dll could be created, and the file has been deleted. " + config["FileNames"]["SteamAPI64"] + " has been restored.")
                     os.remove(root_dir + "/steam_api64.dll")
                     shutil.move(root_dir + "/" + config["FileNames"]["SteamAPI64"], root_dir + "/steam_api64.dll")
-
+                    if 'game_rune' in config["Crack"]["SelectedCrack"]:
+                        if os.path.exists(root_dir + "/rune64.dll"):
+                            os.remove(root_dir + "/steam_api64.rde") if os.path.exists(root_dir + "/steam_api64.rde") else None
+                            os.remove(root_dir + "/rune64.dll") if os.path.exists(root_dir + "/rune64.dll") else None
+                            os.remove(root_dir + "/steam_emu.ini") if os.path.exists(root_dir + "/steam_emu.ini") else None
+                            os.remove(root_dir + "/GameOverlayRenderer64.dll") if os.path.exists(root_dir + "/GameOverlayRenderer64.dll") else None
+                            os.remove(root_dir + "/steamclient64.dll") if os.path.exists(root_dir + "/steamclient64.dll") else None
                 apiFile = root_dir + "/steam_api64.dll"
+                runeFile = root_dir + "/steam_api64.rde"
                 try:
                     apiFileVersion = GetFileVersion(apiFile)
+                    if os.path.exists(runeFile):
+                        raise Exception("Game already cracked with RUNE")
                 except Exception:
                     update_logs("[!] steam_api64.dll: could not retrieve the file version! Seems like the steam_api64.dll file has already been cracked! Aborting...")
                     EndCrack()
@@ -479,34 +633,133 @@ try: # Handles Python errors to write them to a log file so they can be reported
                         update_logs("Created new directory " + relativeRootDir + dir)
                         root.update()
 
+                bit_type = ""
+                for file in os.listdir(dllCurrentLocation):
+                    if "steam_api" in file and file.endswith(".dll"):
+                        if "64" in file:
+                            bit_type = "64"
+                            break
+                        else:
+                            bit_type = "86"
+                            break
+                steam_dll = "steam_api64.dll" if bit_type == "64" else "steam_api.dll"
+
                 # Create all files
                 for fileName in files:
                     root.update()
                     if os.path.isfile(os.path.join(dllAbsoluteRelativeLocation, fileName)): # The file already exists in the game, rename it to .bak
-                        newName = fileName + config["FileNames"]["BakSuffix"]
-                        if fileName == "steam_api.dll" or fileName == "steam_api64.dll":
-                            if config["Preferences"]["CrackOption"] != "0": # Only create config
-                                update_logs("Ignoring " + relativeRootDir + fileName + " because of the set crack approach")
-                                continue
+                        if not "game_rune" in config["Crack"]["SelectedCrack"]:
+                            newName = fileName + config["FileNames"]["BakSuffix"]
+                            if fileName == "steam_api.dll" or fileName == "steam_api64.dll":
+                                if config["Preferences"]["CrackOption"] != "0": # Only create config
+                                    update_logs("Ignoring " + relativeRootDir + fileName + " because of the set crack approach")
+                                    continue
 
-                            if fileName == "steam_api.dll":
-                                newName = config["FileNames"]["SteamAPI"]
+                                if fileName == "steam_api.dll":
+                                    newName = config["FileNames"]["SteamAPI"]
+                                else:
+                                    newName = config["FileNames"]["SteamAPI64"]
+
+                            if newName == "": # Don't keep a backup of the steam_api(64).dll file
+                                os.remove(os.path.join(dllAbsoluteRelativeLocation, fileName))
+                                update_logs("Removed old " + relativeRootDir + fileName + " file because no backup file name is set")
+                            elif os.path.isfile(os.path.join(dllAbsoluteRelativeLocation, newName)): # A backup of this file already exists, the game might already be cracked, abort!
+                                update_logs("[!] Seems like the backup of " + relativeRootDir + fileName + " file already exists! This could indicate that the game has already been cracked. Overwriting it. No backup of " + relativeRootDir + fileName + " could be created, and the file has been deleted.")
+                                os.remove(os.path.join(dllAbsoluteRelativeLocation, fileName))
                             else:
-                                newName = config["FileNames"]["SteamAPI64"]
+                                shutil.move(os.path.join(dllAbsoluteRelativeLocation, fileName), os.path.join(dllAbsoluteRelativeLocation, newName))
+                                update_logs("Backupped old file " + relativeRootDir + fileName + " -> " + newName)
+                        elif fileName == "steam_api.dll" or fileName == "steam_api64.dll": # No existing file, and this file is the steam_api(64).dll one
+                            continue # Ignore this file
 
-                        if newName == "": # Don't keep a backup of the steam_api(64).dll file
-                            os.remove(os.path.join(dllAbsoluteRelativeLocation, fileName))
-                            update_logs("Removed old " + relativeRootDir + fileName + " file because no backup file name is set")
-                        elif os.path.isfile(os.path.join(dllAbsoluteRelativeLocation, newName)): # A backup of this file already exists, the game might already be cracked, abort!
-                            update_logs("[!] Seems like the backup of " + relativeRootDir + fileName + " file already exists! This could indicate that the game has already been cracked. Overwriting it. No backup of " + relativeRootDir + fileName + " could be created, and the file has been deleted.")
-                            os.remove(os.path.join(dllAbsoluteRelativeLocation, fileName))
-                        else:
-                            shutil.move(os.path.join(dllAbsoluteRelativeLocation, fileName), os.path.join(dllAbsoluteRelativeLocation, newName))
-                            update_logs("Backupped old file " + relativeRootDir + fileName + " -> " + newName)
-                    elif fileName == "steam_api.dll" or fileName == "steam_api64.dll": # No existing file, and this file is the steam_api(64).dll one
-                        continue # Ignore this file
+                    if 'game_rune' in config["Crack"]["SelectedCrack"]:
+                        def is_SteamClient021_present(dll_path):
+                            try:
+                                with open(dll_path, "rb") as file:
+                                    content = file.read().decode('utf-8', errors='ignore')
+                                    return True if "SteamClient021" not in content else False
+                            except Exception:
+                                return False
 
-                    shutil.copyfile(os.path.join(root_dir, fileName), os.path.join(dllAbsoluteRelativeLocation, fileName))
+                        # Backup and Create redirect for Steam dll
+                        if not os.path.exists(os.path.join(dllCurrentLocation, f"{steam_dll.split('.')[0]}.rde")):
+                            shutil.copyfile(os.path.join(dllCurrentLocation, steam_dll), os.path.join(dllCurrentLocation, f"{steam_dll}.bak"))
+                            shutil.copyfile(os.path.join(dllCurrentLocation, steam_dll), os.path.join(dllCurrentLocation, f"{steam_dll.split('.')[0]}.rde"))
+                        # Copy RUNE DLL's and steam_emu.ini
+                        shutil.copyfile(os.path.join(root_dir, "steam_emu.ini"), os.path.join(dllCurrentLocation, "steam_emu.ini"))
+                        if bit_type == "64":
+                            shutil.copyfile(os.path.join(root_dir, "GameOverlayRenderer64.dll"), os.path.join(dllCurrentLocation, "GameOverlayRenderer64.dll"))
+                            shutil.copyfile(os.path.join(root_dir, "rune64.dll"), os.path.join(dllCurrentLocation, "rune64.dll"))
+                            if is_SteamClient021_present(os.path.join(dllCurrentLocation, steam_dll)):
+                                shutil.copyfile(os.path.join(root_dir, "steamclient64.dll"), os.path.join(dllCurrentLocation, "steamclient64.dll"))
+                        elif bit_type == "86":
+                            shutil.copyfile(os.path.join(root_dir, "GameOverlayRenderer.dll"), os.path.join(dllCurrentLocation, "GameOverlayRenderer.dll"))
+                            shutil.copyfile(os.path.join(root_dir, "rune.dll"), os.path.join(dllCurrentLocation, "rune.dll"))
+                            if is_SteamClient021_present(os.path.join(dllCurrentLocation, steam_dll)):
+                                shutil.copyfile(os.path.join(root_dir, "steamclient.dll"), os.path.join(dllCurrentLocation, "steamclient.dll"))
+                        
+                        # Overwrite SHELL32 module with RUNE(64) module
+                        with open(os.path.join(dllCurrentLocation, steam_dll), "r+b") as file:
+                            content = file.read()
+                            if bit_type in steam_dll:
+                                content = content.replace(b'SHELL32.DLL', b'RUNE64\x00GNGL')
+                            else:
+                                content = content.replace(b'SHELL32.DLL', b'RUNE\x00!GNGL!')
+                            file.seek(0)
+                            file.write(content)
+
+                        # get interfaces from steam_api(64).dll
+                        first_interface = "SteamUser0"
+                        last_interface = "SteamGameServerStats0"
+                        with open(os.path.join(dllCurrentLocation, steam_dll), "r+b") as file:
+                            content = file.read().decode('utf-8', errors='ignore')
+                            start_index = content.find(first_interface)
+                            end_index = content.find(last_interface) + len(last_interface)
+                            interfaces_str = content[start_index:end_index]
+                            interfaces_list = []
+                            for line in interfaces_str.split('\x00'):
+                                if line.startswith("Steam"):
+                                    interfaces_list.append(line)
+                        rune_interface_index ={
+                            "SteamApps": "STEAMAPPS_INTERFACE_VERSION008",
+                            "SteamClient": "SteamClient017",
+                            "SteamController": "SteamController008",
+                            "SteamFriends": "SteamFriends017",
+                            "SteamGameServer": "SteamGameServer015",
+                            "SteamGameServerStats": "SteamGameServerStats001",
+                            "SteamHTMLSurface": "STEAMHTMLSURFACE_INTERFACE_VERSION_005",
+                            "SteamHTTP": "STEAMHTTP_INTERFACE_VERSION003",
+                            "SteamInput": "SteamInput006",
+                            "SteamInventory": "STEAMINVENTORY_INTERFACE_V003",
+                            "SteamMatchGameSearch": "SteamMatchGameSearch001",
+                            "SteamMatchMaking": "SteamMatchMaking009",
+                            "SteamMatchMakingServers": "SteamMatchMakingServers002",
+                            "SteamMusic": "STEAMMUSIC_INTERFACE_VERSION001",
+                            "SteamMusicRemote": "STEAMMUSICREMOTE_INTERFACE_VERSION001",
+                            "SteamNetworking": "SteamNetworking006",
+                            "SteamParentalSettings": "STEAMPARENTALSETTINGS_INTERFACE_VERSION001",
+                            "SteamParties": "SteamParties002",
+                            "SteamRemotePlay": "STEAMREMOTEPLAY_INTERFACE_VERSION001",
+                            "SteamRemoteStorage": "STEAMREMOTESTORAGE_INTERFACE_VERSION016",
+                            "SteamScreenshots": "STEAMSCREENSHOTS_INTERFACE_VERSION003",
+                            "SteamUGC": "STEAMUGC_INTERFACE_VERSION017",
+                            "SteamUser": "SteamUser023",
+                            "SteamUserStats": "STEAMUSERSTATS_INTERFACE_VERSION012",
+                            "SteamUtils": "SteamUtils010",
+                            "SteamVideo": "STEAMVIDEO_INTERFACE_V002"
+                        }
+                        steamInterfaces = []
+                        for key, value in rune_interface_index.items():
+                            matched = False
+                            for interface in interfaces_list:
+                                if key in interface:
+                                    steamInterfaces.append(f"{key}={interface}")
+                                    matched = True
+                                    break
+                            if not matched:
+                                steamInterfaces.append(f"{key}={value}")
+                    else:
+                        shutil.copyfile(os.path.join(root_dir, fileName), os.path.join(dllAbsoluteRelativeLocation, fileName))
 
                     # Check if ends with a specific extension, so we can replace the presets inside
                     if any(fileName.endswith(extension) for extension in EXTS_TO_REPLACE):
@@ -521,16 +774,28 @@ try: # Handles Python errors to write them to a log file so they can be reported
                         for i in range(len(dlcIDs)):
                             buffer += str(dlcIDs[i]) + " = " + dlcNames[i] + "\n"
                         fileContent = fileContent.replace("SAC_DLC", buffer)
+                        if 'game_rune' in config["Crack"]["SelectedCrack"]:
+                            buffer = ""
+                            for i in range(len(steamInterfaces)):
+                                buffer += str(steamInterfaces[i]) + "\n"
+                            fileContent = fileContent.replace("SAC_Interface", buffer.rstrip('\n\r'))
                         buffer = ""
                         for i in range(len(dlcIDs)):
                             buffer += str(dlcIDs[i]) + "=" + dlcNames[i] + "\n"
-                        fileContent = fileContent.replace("SAC_NoSpaceDLC", buffer)
+                        fileContent = fileContent.replace("SAC_NoSpaceDLC", buffer.rstrip('\n\r'))
 
                         # Write the changes
                         with open(os.path.join(dllAbsoluteRelativeLocation, fileName), "w", encoding="utf-8") as file:
                             file.write(fileContent)
 
-                    update_logs("Created new file " + relativeRootDir + fileName)
+                    if 'game_rune' in config["Crack"]["SelectedCrack"]:
+                        if bit_type in steam_dll:
+                            if bit_type in fileName:
+                                update_logs("Created new file " + relativeRootDir + fileName)
+                        if fileName.endswith(".ini"):
+                            update_logs("Created new file " + relativeRootDir + fileName)
+                    else:
+                        update_logs("Created new file " + relativeRootDir + fileName)
 
 
         update_logs("\n-----\nFinished cracking the game!")
@@ -730,12 +995,14 @@ try: # Handles Python errors to write them to a log file so they can be reported
     # ----- Crack List -----
 
     crackList = { # A list of all selectable cracks
+        "game_rune": ["R.U.N.E (Game)", "The R.U.N.E crack is simple and can crack a full game. It will unlock all DLCs and will also blocked internet connection, but LAN is enabled.\nThe game folder can then freely be shared with others as the crack is contained inside the game folder."],
         "game_ali213": ["ALI213 (Game)", "The ALI213 crack is simple and can crack a full game. It will unlock all DLCs and will also prevent the game from connecting to the internet.\nThe game folder can then freely be shared with others as the crack is contained inside the game folder.\nIf it doesn't work, consider using Goldberg instead."],
         "game_goldberg": ["Goldberg (Game)", "The Goldberg (experimental) crack is similar to ALI213's one.\nIt is open-source, which is better, but might not work with older games, due to SAC's current partial support.\nThis crack will however work better for recent games, where ALI213 could fail.\nInternet connection is blocked, but LAN is enabled."],
         "dlc_creamapi": ["CreamAPI (DLC)", "The CreamAPI crack will unlock all DLCs but will not crack the main game. It is meant to be used with bought copies of a game, with your real Steam account.\nOnly use this is you have purchased the game on Steam and want to unlock its DLCs.\nWill not work for most online games, but might exceptionally work with some like Beat Saber."]
     }
 
     crackListSteamless = { # Whether to use Steamless with a specific crack. True = use Steamless
+        "game_rune": True,
         "game_ali213": True,
         "game_goldberg": True,
         "dlc_creamapi": False
@@ -830,7 +1097,7 @@ try: # Handles Python errors to write them to a log file so they can be reported
             currentConfig["Advanced"]["BypassGameVerification"] = "0"
         if resetLevel == 0 or resetLevel == 2:
             currentConfig["Crack"] = {}
-            currentConfig["Crack"]["SelectedCrack"] = "game_ali213"
+            currentConfig["Crack"]["SelectedCrack"] = "game_rune"
 
         if not customConfig:
             UpdateConfig()
@@ -880,14 +1147,15 @@ try: # Handles Python errors to write them to a log file so they can be reported
         latestversion = data["version"]
         if latestversion == VERSION: # The latest stable version is the one we're running
             updatesButton.config(text="SAC is up to date!", state=tk.NORMAL)
-            return
+        else:
+            updatesButton.config(text="SAC is outdated!", state=tk.NORMAL)
 
         global release_link
         release_link = data["release"]
         release_link = release_link.replace("[VERSION]", latestversion)
 
-        updatesButton.config(text="SAC is outdated!", state=tk.NORMAL)
-        DisplayUpdate()
+        if VERSION < latestversion:
+            DisplayUpdate()
 
     def DisplayUpdate():
         top = tk.Toplevel(root)
@@ -904,7 +1172,8 @@ try: # Handles Python errors to write them to a log file so they can be reported
         updateDisplayButtonsFrame.pack(pady=(5,20))
 
         global updateDisplayButtonUpdate
-        updateDisplayButtonUpdate = ttk.Button(updateDisplayButtonsFrame, text="Update now", command=UpdateSAC, padding=3)
+        state = tk.DISABLED if latestversion == VERSION else tk.NORMAL
+        updateDisplayButtonUpdate = ttk.Button(updateDisplayButtonsFrame, text="Update now", command=UpdateSAC, padding=3, state=state)
         updateDisplayButtonUpdate.grid(row=0, column=0)
 
         global updateDisplayButtonCopy
@@ -1105,3 +1374,7 @@ except Exception:
         traceback.print_exc(file=errorFile)
     traceback.print_exc()
     print("---\nError written to error.log, please report it on GitHub or cs.rin.ru\nMake sure to blank any personal detail.")
+
+
+
+

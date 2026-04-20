@@ -1,0 +1,9 @@
+__pycache__/
+output/
+dist/
+build/
+config.ini
+applist.txt
+compile.bat
+*.spec
+*.log

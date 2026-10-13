@@ -52,6 +52,10 @@ Screenshots from v2.0.0
   - As of v2.2.0 GUI, the `tkinterdnd2` module is required as well (v0.4.0+). Install it with `py -m pip install tkinterdnd2`. ([pypi link](https://pypi.org/project/tkinterdnd2/) - [github link](https://github.com/Eliav2/tkinterdnd2))
   - I believe Python 3.7+ is needed.
 
+## Emulator compatibility
+
+Completing file installation does not verify that a game can start. If startup fails, check the game's logs before assuming that Steamless failed or that a new DRM scheme is involved.
+
 ## Notes about DLCs
 Some DLCs in some games requires you to download additional files.\
 This tool is not able to download those files, you'll have to get a clean version of them.

@@ -533,11 +533,11 @@ try: # Handles Python errors to write them to a log file so they can be reported
                     update_logs("Created new file " + relativeRootDir + fileName)
 
 
-        update_logs("\n-----\nFinished cracking the game!")
+        update_logs("\n-----\nFinished processing the game files.")
         if not cracked:
             update_logs("[!] No Steam API DLL was found in the game!")
         else:
-            update_logs("The game has been cracked successfully! (If you attempt to crack if again, SAC will try its best to make it work, but will let some leftovers of old cracks.)")
+            update_logs("Finished applying the selected emulator files/configuration. Game startup and emulator compatibility have not been verified. If the game fails to start, check its logs and consider another emulator. Reapplying may leave files from a previous emulator.")
 
         EndCrack()
 
